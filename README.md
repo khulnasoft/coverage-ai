@@ -1,6 +1,6 @@
 ## coverage-ai
-
-<p align="center">
+KhulnaSoft Coverage AI aims to help efficiently increasing code coverage, by automatically generating qualified tests to enhance existing test suites 
+<p>
 <a href="https://coverage-badge.samuelcolvin.workers.dev/redirect/khulnasoft/coverage-ai" target="_blank">
     <img src="https://coverage-badge.samuelcolvin.workers.dev/khulnasoft/coverage-ai.svg" alt="Coverage">
 </a>
