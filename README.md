@@ -2,9 +2,10 @@
 KhulnaSoft Coverage AI aims to help efficiently increasing code coverage, by automatically generating qualified tests to enhance existing test suites 
 
 <p>
-<a href="https://coverage-badge.samuelcolvin.workers.dev/redirect/khulnasoft/coverage-ai" target="_blank">
-    <img src="https://coverage-badge.samuelcolvin.workers.dev/khulnasoft/coverage-ai.svg" alt="Coverage">
+<a href='https://coveralls.io/github/khulnasoft/coverage-ai?branch=main'>
+    <img src='https://coveralls.io/repos/github/khulnasoft/coverage-ai/badge.svg?branch=main' alt='Coverage Status'>
 </a>
+
 <a href="https://pypi.org/project/coverage-ai" target="_blank">
     <img src="https://img.shields.io/pypi/v/coverage-ai?color=%2334D058&label=pypi%20package" alt="Package version">
 </a>
@@ -27,7 +28,7 @@ KhulnaSoft Coverage AI aims to help efficiently increasing code coverage, by aut
 
 ## News and Updates
 ### 2024-05-26:
-Cover-Agent now supports nearly any LLM model in the world, using [LiteLLM](#using-other-llms) package.
+Coverage-ai now supports nearly any LLM model in the world, using [LiteLLM](#using-other-llms) package.
 
 Notice that GPT-4 outperforms almost any open-source model in the world when it comes to code tasks and following complicated instructions.
 However, we updated the post-processing scripts to be more comprehensive, and were able to successfully run the [baseline script](#running-the-code) with `llama3-8B` and `llama3-70B models`, for example.
@@ -35,8 +36,8 @@ However, we updated the post-processing scripts to be more comprehensive, and we
 ### 2024-05-09: 
 This repository includes the first known implementation of TestGen-LLM, described in the paper [Automated Unit Test Improvement using Large Language Models at Meta](https://arxiv.org/abs/2402.09171).
 
-# Cover-Agent
-Welcome to Cover-Agent. This focused project utilizes Generative AI to automate and enhance the generation of tests (currently mostly unit tests), aiming to streamline development workflows. Cover-Agent can run via a terminal, and is planned to be integrated into popular CI platforms.
+# Coverage-ai
+Welcome to Coverage-ai. This focused project utilizes Generative AI to automate and enhance the generation of tests (currently mostly unit tests), aiming to streamline development workflows. Coverage-ai can run via a terminal, and is planned to be integrated into popular CI platforms.
 
 We invite the community to collaborate and help extend the capabilities of Coverage AI, continuing its development as a cutting-edge solution in the automated unit test generation domain. We also wish to inspire researchers to leverage this open-source tool to explore new test-generation techniques.
 
