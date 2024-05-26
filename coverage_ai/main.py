@@ -1,17 +1,17 @@
 import argparse
 import os
 import shutil
-from cover_agent.CustomLogger import CustomLogger
-from cover_agent.ReportGenerator import ReportGenerator
-from cover_agent.UnitTestGenerator import UnitTestGenerator
-from cover_agent.version import __version__
+from coverage_ai.CustomLogger import CustomLogger
+from coverage_ai.ReportGenerator import ReportGenerator
+from coverage_ai.UnitTestGenerator import UnitTestGenerator
+from coverage_ai.version import __version__
 
 
 def parse_args():
     """
     Parse command line arguments.
     """
-    parser = argparse.ArgumentParser(description=f"Cover Agent v{__version__}")
+    parser = argparse.ArgumentParser(description=f"Coverage AI v{__version__}")
     parser.add_argument(
         "--source-file-path", required=True, help="Path to the source file."
     )

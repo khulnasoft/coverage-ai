@@ -25,7 +25,7 @@ class TestUnitTestGenerator:
         ]
 
         REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-        TEST_FILE = f"{REPO_ROOT}/templated_tests/python_fastapi/test_app.py"
+        TEST_FILE = f"{REPO_ROOT}/templated_tests/python_readyapi/test_app.py"
 
         # Read in file contents of sample test file so we can roll it back later
         with open(TEST_FILE, "r") as f:
@@ -33,12 +33,12 @@ class TestUnitTestGenerator:
 
         # Instantiate a UnitTestGenerator with the test parameters
         test_gen = UnitTestGenerator(
-            source_file_path=f"{REPO_ROOT}/templated_tests/python_fastapi/app.py",
+            source_file_path=f"{REPO_ROOT}/templated_tests/python_readyapi/app.py",
             test_file_path=TEST_FILE,
-            code_coverage_report_path=f"{REPO_ROOT}/templated_tests/python_fastapi/coverage.xml",
+            code_coverage_report_path=f"{REPO_ROOT}/templated_tests/python_readyapi/coverage.xml",
             llm_model=GPT35_TURBO,
             test_command="pytest --cov=. --cov-report=xml",
-            test_command_dir=f"{REPO_ROOT}/templated_tests/python_fastapi",
+            test_command_dir=f"{REPO_ROOT}/templated_tests/python_readyapi",
             included_files=None,
         )
 
