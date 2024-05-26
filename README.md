@@ -13,15 +13,10 @@
 <a href="https://pypi.org/project/coverage-ai" target="_blank">
     <img src="https://img.shields.io/pypi/pyversions/coverage-ai.svg?color=%2334D058" alt="Supported Python versions">
 </a>
-</p>
-
-[![GitHub license](https://img.shields.io/badge/License-AGPL_3.0-blue.svg)](https://github.com/KhulnaSoft/coverage-ai/blob/main/LICENSE)
-[![Discord](https://badgen.net/badge/icon/discord?icon=discord&label&color=purple)](https://discord.gg/cYsvFJJbdM)
-[![Twitter](https://img.shields.io/twitter/follow/khulnasoft)](https://twitter.com/khulnasoft)
-    <a href="https://github.com/KhulnaSoft/coverage-ai/commits/main">
+<a href="https://github.com/KhulnaSoft/coverage-ai/commits/main">
     <img alt="GitHub" src="https://img.shields.io/github/last-commit/KhulnaSoft/coverage-ai/main?style=for-the-badge" height="20">
-    </a>
-</div>
+</a>
+</p>
 
 ## Table of Contents
 - [News and Updates](#news-and-updates)
