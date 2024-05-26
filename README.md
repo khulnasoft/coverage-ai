@@ -1,9 +1,6 @@
 ## coverage-ai
 
 <p align="center">
-<a href="https://github.com/khulnasoft/coverage-ai/actions?query=workflow%3ACI+event%3Apush+branch%3Amaster" target="_blank">
-    <img src="https://github.com/khulnasoft/coverage-ai/workflows/Test/badge.svg?event=push&branch=master" alt="Test">
-</a>
 <a href="https://coverage-badge.samuelcolvin.workers.dev/redirect/khulnasoft/coverage-ai" target="_blank">
     <img src="https://coverage-badge.samuelcolvin.workers.dev/khulnasoft/coverage-ai.svg" alt="Coverage">
 </a>
