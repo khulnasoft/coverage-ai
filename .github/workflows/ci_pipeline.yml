@@ -16,7 +16,7 @@ jobs:
       version_changed: ${{ steps.filter.outputs.version_changed }}
     steps:
       - uses: actions/checkout@v3
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
