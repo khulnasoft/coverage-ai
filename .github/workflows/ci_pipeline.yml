@@ -42,13 +42,13 @@ jobs:
         run: |
           poetry run pytest --junitxml=testLog.xml --cov=coverage_ai --cov-report=xml:cobertura.xml --cov-report=term --cov-fail-under=70 --log-cli-level=INFO
       - name: Upload test report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-reports
           path: testLog.xml
       - name: Upload coverage report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: coverage-reports
@@ -105,7 +105,7 @@ jobs:
       run: ./dist/coverage-ai-${{ matrix.os }} --help
       shell: bash
     - name: Upload Executable
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-ai-${{ matrix.os }}
         path: dist/coverage-ai-${{ matrix.os }}*
