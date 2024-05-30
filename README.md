@@ -1,22 +1,25 @@
-## coverage-ai
-KhulnaSoft Coverage AI aims to help efficiently increasing code coverage, by automatically generating qualified tests to enhance existing test suites 
+<div align="center">
 
-<p>
-<a href='https://coveralls.io/github/khulnasoft/coverage-ai?branch=main'>
-    <img src='https://coveralls.io/repos/github/khulnasoft/coverage-ai/badge.svg?branch=main' alt='Coverage Status'>
-</a>
+<div align="center">
 
-<a href="https://pypi.org/project/coverage-ai" target="_blank">
-    <img src="https://img.shields.io/pypi/v/coverage-ai?color=%2334D058&label=pypi%20package" alt="Package version">
-</a>
-<a href="https://pypi.org/project/coverage-ai" target="_blank">
-    <img src="https://img.shields.io/pypi/pyversions/coverage-ai.svg?color=%2334D058" alt="Supported Python versions">
-</a>
-<a href="https://github.com/KhulnaSoft/coverage-ai/commits/main">
-    <img alt="GitHub" src="https://img.shields.io/github/last-commit/KhulnaSoft/coverage-ai/main?style=for-the-badge" height="20">
-</a>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://www.khulnasoft.com/images/coverage-ai/coverage-ai-dark.png" width="330">
+  <source media="(prefers-color-scheme: light)" srcset="https://www.khulnasoft.com/images/coverage-ai/coverage-ai-light.png" width="330">
+  <img src="https://www.khulnasoft.com/images/coverage-ai/coverage-ai-light.png" alt="logo" width="330">
+
+</picture>
+<br/>
+KhulnaSoft Coverage Ai aims to help efficiently increasing code coverage, by automatically generating qualified tests to enhance existing test suites
 </div>
-</p>
+
+[![GitHub license](https://img.shields.io/badge/License-AGPL_3.0-blue.svg)](https://github.com/khulnasoft/coverage-ai/blob/main/LICENSE)
+[![Discord](https://badgen.net/badge/icon/discord?icon=discord&label&color=purple)](https://discord.gg/cYsvFJJbdM)
+[![Twitter](https://img.shields.io/twitter/follow/khulnasoft)](https://twitter.com/khulnasoft)
+    <a href="https://github.com/khulnasoft/coverage-ai/commits/main">
+    <img alt="GitHub" src="https://img.shields.io/github/last-commit/khulnasoft/coverage-ai/main?style=for-the-badge" height="20">
+    </a>
+</div>
 
 ## Table of Contents
 - [News and Updates](#news-and-updates)
@@ -28,7 +31,7 @@ KhulnaSoft Coverage AI aims to help efficiently increasing code coverage, by aut
 
 ## News and Updates
 ### 2024-05-26:
-Coverage-ai now supports nearly any LLM model in the world, using [LiteLLM](#using-other-llms) package.
+Coverage-Ai now supports nearly any LLM model in the world, using [LiteLLM](#using-other-llms) package.
 
 Notice that GPT-4 outperforms almost any open-source model in the world when it comes to code tasks and following complicated instructions.
 However, we updated the post-processing scripts to be more comprehensive, and were able to successfully run the [baseline script](#running-the-code) with `llama3-8B` and `llama3-70B models`, for example.
@@ -36,10 +39,11 @@ However, we updated the post-processing scripts to be more comprehensive, and we
 ### 2024-05-09: 
 This repository includes the first known implementation of TestGen-LLM, described in the paper [Automated Unit Test Improvement using Large Language Models at Meta](https://arxiv.org/abs/2402.09171).
 
-# Coverage-ai
-Welcome to Coverage-ai. This focused project utilizes Generative AI to automate and enhance the generation of tests (currently mostly unit tests), aiming to streamline development workflows. Coverage-ai can run via a terminal, and is planned to be integrated into popular CI platforms.
+# Coverage-Ai
+Welcome to Coverage-Ai. This focused project utilizes Generative AI to automate and enhance the generation of tests (currently mostly unit tests), aiming to streamline development workflows. Coverage-Ai can run via a terminal, and is planned to be integrated into popular CI platforms.
+[![Test generation xxx](https://www.khulnasoft.com/wp-content/uploads/2024/05/KhulnaSoft-CoverageAi-v240519-small-loop.gif)](https://youtu.be/fIYkSEJ4eqE?feature=shared)
 
-We invite the community to collaborate and help extend the capabilities of Coverage AI, continuing its development as a cutting-edge solution in the automated unit test generation domain. We also wish to inspire researchers to leverage this open-source tool to explore new test-generation techniques.
+We invite the community to collaborate and help extend the capabilities of Coverage Ai, continuing its development as a cutting-edge solution in the automated unit test generation domain. We also wish to inspire researchers to leverage this open-source tool to explore new test-generation techniques.
 
 
 ## Overview
@@ -62,16 +66,16 @@ If running directly from the repository you will also need:
 - Poetry installed for managing Python package dependencies. Installation instructions for Poetry can be found at [https://python-poetry.org/docs/](https://python-poetry.org/docs/).
 
 ### Standalone Runtime
-The Coverage AI can be installed as a Python Pip package or run as a standalone executable.
+The Coverage Ai can be installed as a Python Pip package or run as a standalone executable.
 
 #### Python Pip
 To install the Python Pip package directly via GitHub run the following command:
 ```
-pip install git+https://github.com/KhulnaSoft/coverage-ai.git
+pip install git+https://github.com/khulnasoft/coverage-ai.git
 ```
 
 #### Binary
-The binary can be run without any Python environment installed on your system (e.g. within a Docker container that does not contain Python). You can download the release for your system by navigating to the project's [release page](https://github.com/KhulnaSoft/coverage-ai/releases).
+The binary can be run without any Python environment installed on your system (e.g. within a Docker container that does not contain Python). You can download the release for your system by navigating to the project's [release page](https://github.com/khulnasoft/coverage-ai/releases).
 
 ### Repository Setup
 Run the following command to install all the dependencies and run the project from source:
@@ -80,7 +84,7 @@ poetry install
 ```
 
 ### Running the Code
-After downloading the executable or installing the Pip package you can run the Coverage AI to generate and validate unit tests. Execute it from the command line by using the following command:
+After downloading the executable or installing the Pip package you can run the Coverage Ai to generate and validate unit tests. Execute it from the command line by using the following command:
 ```shell
 coverage-ai \
   --source-file-path "<path_to_source_file>" \
@@ -96,14 +100,14 @@ coverage-ai \
 
 You can use the example projects within this repository to run this code as a test.
 
-Follow the steps in the README.md file located in the `templated_tests/python_coverage-ai/` directory, then return to the root of the repository and run the following command to add tests to the **python coverage-ai** example:
+Follow the steps in the README.md file located in the `templated_tests/python_readyapi/` directory, then return to the root of the repository and run the following command to add tests to the **python readyapi** example:
 ```shell
 coverage-ai \
-  --source-file-path "templated_tests/python_coverage-ai/app.py" \
-  --test-file-path "templated_tests/python_coverage-ai/test_app.py" \
-  --code-coverage-report-path "templated_tests/python_coverage-ai/coverage.xml" \
+  --source-file-path "templated_tests/python_readyapi/app.py" \
+  --test-file-path "templated_tests/python_readyapi/test_app.py" \
+  --code-coverage-report-path "templated_tests/python_readyapi/coverage.xml" \
   --test-command "pytest --cov=. --cov-report=xml --cov-report=term" \
-  --test-command-dir "templated_tests/python_coverage-ai" \
+  --test-command-dir "templated_tests/python_readyapi" \
   --coverage-type "cobertura" \
   --desired-coverage 70 \
   --max-iterations 10
@@ -158,7 +162,7 @@ A few debug files will be outputted locally within the repository (that are part
 ### Using other LLMs
 This project uses LiteLLM to communicate with OpenAI and other hosted LLMs (supporting 100+ LLMs to date). To use a different model other than the OpenAI default you'll need to:
 1. Export any environment variables needed by the supported LLM [following the LiteLLM instructions](https://litellm.vercel.app/docs/proxy/quick_start#supported-llms).
-2. Call the name of the model using the `--model` option when calling Coverage AI.
+2. Call the name of the model using the `--model` option when calling Coverage Ai.
 
 For example (as found in the [LiteLLM Quick Start guide](https://litellm.vercel.app/docs/proxy/quick_start#supported-llms)):
 ```shell
@@ -168,6 +172,16 @@ export VERTEX_LOCATION="us-west"
 coverage-ai \
   ...
   --model "vertex_ai/gemini-pro"
+```
+
+#### OpenAI Compatible Endpoint
+```shell
+export OPENAI_API_KEY="<your api key>" # If <your-api-base> requires an API KEY, set this value.
+
+coverage-ai \
+  ...
+  --model "openai/<your model name>" \
+  --api-base "<your-api-base>"
 ```
 
 
