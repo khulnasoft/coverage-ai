@@ -6,6 +6,7 @@
 
 # Generated reports
 .coverage
+cobertura.xml
 coverage.xml
 testLog.xml
 
