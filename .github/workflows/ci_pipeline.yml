@@ -42,13 +42,13 @@ jobs:
           OPENAI_API_KEY: "This_is_a_fake_API_key"
         run: make test
       - name: Upload test report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-reports
           path: testLog.xml
       - name: Upload coverage report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: coverage-reports
@@ -105,7 +105,7 @@ jobs:
       run: ./dist/coverage-ai --help
       shell: bash
     - name: Upload Executable
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-ai-${{ matrix.os }}
         path: dist/coverage-ai*
