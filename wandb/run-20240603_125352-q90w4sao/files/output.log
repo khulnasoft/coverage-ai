@@ -1,0 +1,88 @@
+[1mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new
+LiteLLM.Info: If you need to debug this error, use `litellm.set_verbose=True'.
+2024-06-03 12:53:52,733 - coverage_ai.UnitTestGenerator - ERROR - Error during initial test suite analysis: OpenAIException - Traceback (most recent call last):
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/llms/openai.py", line 574, in completion
+    raise e
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/llms/openai.py", line 492, in completion
+    return self.streaming(
+           ^^^^^^^^^^^^^^^
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/llms/openai.py", line 654, in streaming
+    openai_client = openai(
+                    ^^^^^^^
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/openai/_client.py", line 104, in __init__
+    raise openaiError(
+openai.openaiError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+Traceback (most recent call last):
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/llms/openai.py", line 574, in completion
+    raise e
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/llms/openai.py", line 492, in completion
+    return self.streaming(
+           ^^^^^^^^^^^^^^^
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/llms/openai.py", line 654, in streaming
+    openai_client = OpenAI(
+                    ^^^^^^^
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/openai/_client.py", line 104, in __init__
+    raise OpenAIError(
+openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+During handling of the above exception, another exception occurred:
+Traceback (most recent call last):
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/main.py", line 1079, in completion
+    raise e
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/main.py", line 1052, in completion
+    response = openai_chat_completions.completion(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/llms/openai.py", line 582, in completion
+    raise OpenAIError(status_code=500, message=traceback.format_exc())
+litellm.llms.openai.OpenAIError: Traceback (most recent call last):
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/llms/openai.py", line 574, in completion
+    raise e
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/llms/openai.py", line 492, in completion
+    return self.streaming(
+           ^^^^^^^^^^^^^^^
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/llms/openai.py", line 654, in streaming
+    openai_client = OpenAI(
+                    ^^^^^^^
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/openai/_client.py", line 104, in __init__
+    raise OpenAIError(
+openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+During handling of the above exception, another exception occurred:
+Traceback (most recent call last):
+  File "/workspace/coverage-ai/coverage_ai/UnitTestGenerator.py", line 253, in initial_test_suite_analysis
+    self.ai_caller.call_model(prompt=prompt_test_headers_indentation)
+  File "/workspace/coverage-ai/coverage_ai/AICaller.py", line 59, in call_model
+    response = litellm.completion(**completion_params)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/utils.py", line 3415, in wrapper
+    raise e
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/utils.py", line 3308, in wrapper
+    result = original_function(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/main.py", line 2370, in completion
+    raise exception_type(
+          ^^^^^^^^^^^^^^^
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/utils.py", line 9885, in exception_type
+    raise e
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/utils.py", line 8551, in exception_type
+    raise AuthenticationError(
+litellm.exceptions.AuthenticationError: OpenAIException - Traceback (most recent call last):
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/llms/openai.py", line 574, in completion
+    raise e
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/llms/openai.py", line 492, in completion
+    return self.streaming(
+           ^^^^^^^^^^^^^^^
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/litellm/llms/openai.py", line 654, in streaming
+    openai_client = openai(
+                    ^^^^^^^
+  File "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/lib/python3.12/site-packages/openai/_client.py", line 104, in __init__
+    raise openaiError(
+openai.openaiError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+During handling of the above exception, another exception occurred:
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/workspace/coverage-ai/coverage_ai/main.py", line 95, in main
+    agent.run()
+  File "/workspace/coverage-ai/coverage_ai/CoverageAi.py", line 61, in run
+    self.test_gen.initial_test_suite_analysis()
+  File "/workspace/coverage-ai/coverage_ai/UnitTestGenerator.py", line 295, in initial_test_suite_analysis
+    raise "Error during initial test suite analysis"
+TypeError: exceptions must derive from BaseException
