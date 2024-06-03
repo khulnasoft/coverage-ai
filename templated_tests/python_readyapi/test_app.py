@@ -1,3 +1,4 @@
+import pytest
 from readyapi.testclient import TestClient
 from app import app
 
