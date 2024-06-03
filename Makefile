@@ -24,6 +24,8 @@ installer:
 		--add-data "coverage_ai/settings/analyze_suite_test_insert_line.toml:." \
 		--hidden-import=tiktoken_ext.openai_public \
 		--hidden-import=tiktoken_ext \
+		--hidden-import=wandb \
+		--hidden-import=wandb_gql \
 		--onefile \
 		--name coverage-ai \
 		coverage_ai/main.py

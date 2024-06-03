@@ -1,0 +1,136 @@
+{
+    "os": "Linux-6.1.89-060189-generic-x86_64-with-glibc2.35",
+    "python": "3.12.3",
+    "heartbeatAt": "2024-06-03T12:53:52.545656",
+    "startedAt": "2024-06-03T12:53:52.213149",
+    "docker": null,
+    "cuda": null,
+    "args": [
+        "--source-file-path",
+        "coverage_ai/main.py",
+        "--test-file-path",
+        "tests/test_main.py",
+        "--code-coverage-report-path",
+        "coverage.xml",
+        "--test-command",
+        "poetry run pytest --junitxml=testLog.xml --cov=templated_tests --cov=coverage_ai --cov-report=xml --cov-report=term --log-cli-level=INFO",
+        "--coverage-type",
+        "cobertura",
+        "--desired-coverage",
+        "70",
+        "--max-iterations",
+        "1",
+        "--model",
+        "gpt-4o"
+    ],
+    "state": "running",
+    "program": "<python with no main file>",
+    "codePathLocal": null,
+    "git": {
+        "remote": "https://github.com/khulnasoft/coverage-ai.git",
+        "commit": "6a5c2e4da27229f3ddc09adc031d81ef135c2f34"
+    },
+    "email": "{ID}+{username}@users.noreply.github.com",
+    "root": "/workspace/coverage-ai",
+    "host": "khulnasoft-coverageai-0fa1m1ahtma",
+    "username": "gitpod",
+    "executable": "/workspace/.pyenv_mirror/poetry/virtualenvs/coverage-ai-dy4CUvAK-py3.12/bin/python",
+    "cpu_count": 8,
+    "cpu_count_logical": 16,
+    "cpu_freq": {
+        "current": 2449.998,
+        "min": 0.0,
+        "max": 0.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 2449.998,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2449.998,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2449.998,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2449.998,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2449.998,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2449.998,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2449.998,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2449.998,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2449.998,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2449.998,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2449.998,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2449.998,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2449.998,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2449.998,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2449.998,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2449.998,
+            "min": 0.0,
+            "max": 0.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 1399.9760780334473,
+            "used": 959.8996963500977
+        }
+    },
+    "memory": {
+        "total": 62.540950775146484
+    }
+}

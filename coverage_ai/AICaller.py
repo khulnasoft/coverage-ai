@@ -1,6 +1,8 @@
+import datetime
+import os
 import time
 import litellm
-
+from wandb.sdk.data_types.trace_tree import Trace
 
 class AICaller:
     def __init__(self, model: str, api_base: str = ""):
@@ -71,6 +73,14 @@ class AICaller:
 
         model_response = litellm.stream_chunk_builder(chunks, messages=messages)
 
+        if 'WANDB_API_KEY' in os.environ:
+            root_span = Trace(
+                name="inference_"+datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                kind="llm",  # kind can be "llm", "chain", "agent" or "tool
+                inputs={"user_prompt": prompt["user"], "system_prompt": prompt["system"]},
+                outputs={"model_response": model_response["choices"][0]["message"]["content"]})
+            root_span.log(name="inference")
+            
         # Returns: Response, Prompt token count, and Response token count
         return (
             model_response["choices"][0]["message"]["content"],

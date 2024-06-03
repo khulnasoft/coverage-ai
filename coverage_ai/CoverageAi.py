@@ -1,5 +1,8 @@
+import datetime
 import os
 import shutil
+import wandb
+
 from coverage_ai.CustomLogger import CustomLogger
 from coverage_ai.ReportGenerator import ReportGenerator
 from coverage_ai.UnitTestGenerator import UnitTestGenerator
@@ -44,6 +47,13 @@ class CoverageAi:
             self.args.test_file_output_path = self.args.test_file_path
 
     def run(self):
+
+        if 'WANDB_API_KEY' in os.environ:
+            wandb.login(key=os.environ['WANDB_API_KEY'])
+            time_and_date = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            run_name = f"{self.args.model}_" + time_and_date
+            wandb.init(project="coverage-ai", name=run_name)
+        
         if not self.args.prompt_only:
             iteration_count = 0
             test_results_list = []
@@ -90,3 +100,6 @@ class CoverageAi:
             self.logger.info(
                 f"Prompt only option requested. Skipping call to LLM. Prompt can be found at: {self.args.prompt_only}"
             )
+
+        if 'WANDB_API_KEY' in os.environ:
+            wandb.finish()
