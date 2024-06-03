@@ -117,15 +117,15 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Download executables (Ubuntu)
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: coverage-ai-ubuntu-latest
         path: dist/ubuntu-latest
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v4
       with:
         name: coverage-ai-windows-latest
         path: dist/windows-latest
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v4
       with:
         name: coverage-ai-macos-latest
         path: dist/macos-latest
