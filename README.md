@@ -1,10 +1,21 @@
-## coverage-ai
-KhulnaSoft Coverage AI aims to help efficiently increasing code coverage, by automatically generating qualified tests to enhance existing test suites 
+<div align="center">
+
+<div align="center">
+
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://www.khulnasoft.com/images/coverage-ai/coverage-ai-dark.png" width="330">
+  <source media="(prefers-color-scheme: light)" srcset="https://www.khulnasoft.com/images/coverage-ai/coverage-ai-light.png" width="330">
+  <img src="https://www.khulnasoft.com/images/coverage-ai/coverage-ai-light.png" alt="logo" width="330">
+
+</picture>
+<br/>
+KhulnaSoft Coverage Ai aims to help efficiently increasing code coverage, by automatically generating qualified tests to enhance existing test suites
 </div>
 
 [![GitHub license](https://img.shields.io/badge/License-AGPL_3.0-blue.svg)](https://github.com/khulnasoft/coverage-ai/blob/main/LICENSE)
 [![Discord](https://badgen.net/badge/icon/discord?icon=discord&label&color=purple)](https://discord.gg/cYsvFJJbdM)
-[![Twitter](https://img.shields.io/twitter/follow/khulnasoft)](https://twitter.com/khulnasoft)
+[![Twitter](https://img.shields.io/twitter/follow/codiumai)](https://twitter.com/codiumai)
     <a href="https://github.com/khulnasoft/coverage-ai/commits/main">
     <img alt="GitHub" src="https://img.shields.io/github/last-commit/khulnasoft/coverage-ai/main?style=for-the-badge" height="20">
     </a>
@@ -19,8 +30,17 @@ KhulnaSoft Coverage AI aims to help efficiently increasing code coverage, by aut
 
 
 ## News and Updates
+
+### 2024-06-05:
+The logic and prompts for adding new imports for the generated tests have been improved.
+
+We also added a [usage examples](docs/usage_examples.md) file, with more elaborate examples of how to use the Coverage Ai.
+
+### 2024-06-01:
+Added support for comprehensive logging to [Weights and Biases](https://wandb.ai/). Set the `WANDB_API_KEY` environment variable to enable this feature.
+
 ### 2024-05-26:
-Coverage-Ai now supports nearly any LLM model in the world, using [LiteLLM](#using-other-llms) package.
+Cover-Agent now supports nearly any LLM model in the world, using [LiteLLM](#using-other-llms) package.
 
 Notice that GPT-4 outperforms almost any open-source model in the world when it comes to code tasks and following complicated instructions.
 However, we updated the post-processing scripts to be more comprehensive, and were able to successfully run the [baseline script](#running-the-code) with `llama3-8B` and `llama3-70B models`, for example.
@@ -28,8 +48,8 @@ However, we updated the post-processing scripts to be more comprehensive, and we
 ### 2024-05-09: 
 This repository includes the first known implementation of TestGen-LLM, described in the paper [Automated Unit Test Improvement using Large Language Models at Meta](https://arxiv.org/abs/2402.09171).
 
-# Coverage-Ai
-Welcome to Coverage-Ai. This focused project utilizes Generative AI to automate and enhance the generation of tests (currently mostly unit tests), aiming to streamline development workflows. Coverage-Ai can run via a terminal, and is planned to be integrated into popular CI platforms.
+# Cover-Agent
+Welcome to Cover-Agent. This focused project utilizes Generative AI to automate and enhance the generation of tests (currently mostly unit tests), aiming to streamline development workflows. Cover-Agent can run via a terminal, and is planned to be integrated into popular CI platforms.
 [![Test generation xxx](https://www.khulnasoft.com/wp-content/uploads/2024/05/KhulnaSoft-CoverageAi-v240519-small-loop.gif)](https://youtu.be/fIYkSEJ4eqE?feature=shared)
 
 We invite the community to collaborate and help extend the capabilities of Coverage Ai, continuing its development as a cutting-edge solution in the automated unit test generation domain. We also wish to inspire researchers to leverage this open-source tool to explore new test-generation techniques.
@@ -87,20 +107,25 @@ coverage-ai \
   --included-files "<optional_list_of_files_to_include>"
 ```
 
-You can use the example projects within this repository to run this code as a test.
+You can use the example code below to try out the Coverage Ai.
+(Note that the [usage_examples](docs/usage_examples.md) file provides more elaborate examples of how to use the Coverage Ai)
 
-Follow the steps in the README.md file located in the `templated_tests/python_readyapi/` directory, then return to the root of the repository and run the following command to add tests to the **python readyapi** example:
+#### Python
+
+Follow the steps in the README.md file located in the `templated_tests/python_fastapi/` directory to setup an environment, then return to the root of the repository, and run the following command to add tests to the **python fastapi** example:
 ```shell
 coverage-ai \
-  --source-file-path "templated_tests/python_readyapi/app.py" \
-  --test-file-path "templated_tests/python_readyapi/test_app.py" \
-  --code-coverage-report-path "templated_tests/python_readyapi/coverage.xml" \
+  --source-file-path "templated_tests/python_fastapi/app.py" \
+  --test-file-path "templated_tests/python_fastapi/test_app.py" \
+  --code-coverage-report-path "templated_tests/python_fastapi/coverage.xml" \
   --test-command "pytest --cov=. --cov-report=xml --cov-report=term" \
-  --test-command-dir "templated_tests/python_readyapi" \
+  --test-command-dir "templated_tests/python_fastapi" \
   --coverage-type "cobertura" \
   --desired-coverage 70 \
   --max-iterations 10
 ```
+
+#### Go
 
 For an example using **go** `cd` into `templated_tests/go_webservice`, set up the project following the `README.md`.
 To work with coverage reporting, you need to install `gocov` and `gocov-xml`. Run the following commands to install these tools:
@@ -121,24 +146,24 @@ coverage-ai \
   --max-iterations 1
 ```
 
-Try and add more tests to this project by running this command at the root of this repository:
+#### Java
+For an example using **java** `cd` into `templated_tests/java_gradle`, set up the project following the [README.md](templated_tests/java_gradle/README.md).
+To work with jacoco coverage reporting, follow the [README.md](templated_tests/java_gradle/README.md) Requirements section:
+and then run the following command:
 ```shell
-poetry run coverage-ai \
-  --source-file-path "coverage_ai/main.py" \
-  --test-file-path "tests/test_main.py" \
-  --code-coverage-report-path "coverage.xml" \
-  --test-command "poetry run pytest --junitxml=testLog.xml --cov=templated_tests --cov=coverage_ai --cov-report=xml --cov-report=term --log-cli-level=INFO" \
-  --coverage-type "cobertura" \
-  --desired-coverage 70 \
-  --max-iterations 1 \
-  --model "gpt-4o"
+coverage-ai \
+  --source-file-path="src/main/java/com/davidparry/cover/SimpleMathOperations.java" \
+  --test-file-path="src/test/groovy/com/davidparry/cover/SimpleMathOperationsSpec.groovy" \
+  --code-coverage-report-path="build/reports/jacoco/test/jacocoTestReport.csv" \
+  --test-command="./gradlew clean test jacocoTestReport" \
+  --test-command-dir=$(pwd) \
+  --coverage-type="jacoco" \
+  --desired-coverage=70 \
+  --max-iterations=1
 ```
-
-Note: If you are using Poetry then use the `poetry run coverage-ai` command instead of the `coverage-ai` run command.
 
 ### Outputs
 A few debug files will be outputted locally within the repository (that are part of the `.gitignore`)
-* `generated_prompt.md`: The full prompt that is sent to the LLM
 * `run.log`: A copy of the logger that gets dumped to your `stdout`
 * `test_results.html`: A results table that contains the following for each generated test:
   * Test status
@@ -147,6 +172,9 @@ A few debug files will be outputted locally within the repository (that are part
   * `stderr`
   * `stdout`
   * Generated test
+
+### Additional logging
+If you set an environment variable `WANDB_API_KEY`, the prompts, responses, and additional information will be logged to [Weights and Biases](https://wandb.ai/).
 
 ### Using other LLMs
 This project uses LiteLLM to communicate with OpenAI and other hosted LLMs (supporting 100+ LLMs to date). To use a different model other than the OpenAI default you'll need to:

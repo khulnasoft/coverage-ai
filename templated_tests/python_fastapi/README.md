@@ -1,4 +1,4 @@
-# Python ReadyAPI Application Example
+# Python FastAPI Application Example
 An example web application written in Python for code coverage generation testing
 
 ## Requirements
