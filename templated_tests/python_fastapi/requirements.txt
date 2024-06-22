@@ -1,4 +1,4 @@
-readyapi
+fastapi
 httpx
 pytest
 pytest-cov

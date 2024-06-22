@@ -1,11 +1,12 @@
 import pytest
-from unittest.mock import patch
 from coverage_ai.UnitTestGenerator import (
     UnitTestGenerator,
     extract_error_message_python,
 )
 from coverage_ai.ReportGenerator import ReportGenerator
 import os
+
+from unittest.mock import patch, mock_open
 
 
 class TestUnitTestGenerator:
@@ -28,7 +29,7 @@ class TestUnitTestGenerator:
         }
 
         REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-        TEST_FILE = f"{REPO_ROOT}/templated_tests/python_readyapi/test_app.py"
+        TEST_FILE = f"{REPO_ROOT}/templated_tests/python_fastapi/test_app.py"
 
         # Read in file contents of sample test file so we can roll it back later
         with open(TEST_FILE, "r") as f:
@@ -36,15 +37,15 @@ class TestUnitTestGenerator:
 
         # Instantiate a UnitTestGenerator with the test parameters
         test_gen = UnitTestGenerator(
-            source_file_path=f"{REPO_ROOT}/templated_tests/python_readyapi/app.py",
+            source_file_path=f"{REPO_ROOT}/templated_tests/python_fastapi/app.py",
             test_file_path=TEST_FILE,
-            code_coverage_report_path=f"{REPO_ROOT}/templated_tests/python_readyapi/coverage.xml",
+            code_coverage_report_path=f"{REPO_ROOT}/templated_tests/python_fastapi/coverage.xml",
             llm_model=GPT35_TURBO,
             test_command="pytest --cov=. --cov-report=xml",
-            test_command_dir=f"{REPO_ROOT}/templated_tests/python_readyapi",
+            test_command_dir=f"{REPO_ROOT}/templated_tests/python_fastapi",
             included_files=None,
         )
-        test_gen.relevant_line_number_to_insert_after = 10
+        test_gen.relevant_line_number_to_insert_tests_after = 10
         test_gen.test_headers_indentation = 4
 
         # Generate the tests
@@ -86,7 +87,7 @@ class TestUnitTestGenerator:
         }
 
         REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-        TEST_FILE = f"{REPO_ROOT}/templated_tests/python_readyapi/test_app.py"
+        TEST_FILE = f"{REPO_ROOT}/templated_tests/python_fastapi/test_app.py"
 
         # Read in file contents of sample test file so we can roll it back later
         with open(TEST_FILE, "r") as f:
@@ -94,15 +95,15 @@ class TestUnitTestGenerator:
 
         # Instantiate a UnitTestGenerator with the test parameters
         test_gen = UnitTestGenerator(
-            source_file_path=f"{REPO_ROOT}/templated_tests/python_readyapi/app.py",
+            source_file_path=f"{REPO_ROOT}/templated_tests/python_fastapi/app.py",
             test_file_path=TEST_FILE,
-            code_coverage_report_path=f"{REPO_ROOT}/templated_tests/python_readyapi/coverage.xml",
+            code_coverage_report_path=f"{REPO_ROOT}/templated_tests/python_fastapi/coverage.xml",
             llm_model=GPT35_TURBO,
             test_command="pytest --cov=. --cov-report=xml",
-            test_command_dir=f"{REPO_ROOT}/templated_tests/python_readyapi",
+            test_command_dir=f"{REPO_ROOT}/templated_tests/python_fastapi",
             included_files=None,
         )
-        test_gen.relevant_line_number_to_insert_after = 10
+        test_gen.relevant_line_number_to_insert_tests_after = 10
         test_gen.test_headers_indentation = 4
 
         # Generate the tests
@@ -122,6 +123,28 @@ class TestUnitTestGenerator:
         # Write back sample test file contents
         with open(TEST_FILE, "w") as f:
             f.write(original_file_contents)
+
+    def test_get_included_files_mixed_paths(self):
+        with patch("builtins.open", mock_open(read_data="file content")) as mock_file:
+            mock_file.side_effect = [
+                IOError("File not found"),
+                mock_open(read_data="file content").return_value,
+            ]
+            included_files = ["invalid_file1.txt", "valid_file2.txt"]
+            result = UnitTestGenerator.get_included_files(included_files)
+            assert (
+                result
+                == "file_path: `valid_file2.txt`\ncontent:\n```\nfile content\n```"
+            )
+
+    def test_get_included_files_valid_paths(self):
+        with patch("builtins.open", mock_open(read_data="file content")):
+            included_files = ["file1.txt", "file2.txt"]
+            result = UnitTestGenerator.get_included_files(included_files)
+            assert (
+                result
+                == "file_path: `file1.txt`\ncontent:\n```\nfile content\n```\nfile_path: `file2.txt`\ncontent:\n```\nfile content\n```"
+            )
 
 
 class TestExtractErrorMessage:
