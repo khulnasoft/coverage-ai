@@ -89,14 +89,14 @@ coverage-ai \
 
 You can use the example projects within this repository to run this code as a test.
 
-Follow the steps in the README.md file located in the `templated_tests/python_readyapi/` directory, then return to the root of the repository and run the following command to add tests to the **python readyapi** example:
+Follow the steps in the README.md file located in the `templated_tests/python_fastapi/` directory, then return to the root of the repository and run the following command to add tests to the **python readyapi** example:
 ```shell
 coverage-ai \
-  --source-file-path "templated_tests/python_readyapi/app.py" \
-  --test-file-path "templated_tests/python_readyapi/test_app.py" \
-  --code-coverage-report-path "templated_tests/python_readyapi/coverage.xml" \
+  --source-file-path "templated_tests/python_fastapi/app.py" \
+  --test-file-path "templated_tests/python_fastapi/test_app.py" \
+  --code-coverage-report-path "templated_tests/python_fastapi/coverage.xml" \
   --test-command "pytest --cov=. --cov-report=xml --cov-report=term" \
-  --test-command-dir "templated_tests/python_readyapi" \
+  --test-command-dir "templated_tests/python_fastapi" \
   --coverage-type "cobertura" \
   --desired-coverage 70 \
   --max-iterations 10
