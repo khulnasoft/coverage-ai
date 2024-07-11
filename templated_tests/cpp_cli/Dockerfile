@@ -1,13 +1,7 @@
 FROM python:3
 
 # Install build tools
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y g++ cmake make lcov
-
-# install packages for code coverage
-RUN pip install lcov_cobertura
-
-# Install Google Test source
-RUN apt-get install -y libgtest-dev
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y g++ cmake make lcov libgtest-dev
 
 # Build Google Test
 WORKDIR /usr/src/gtest
