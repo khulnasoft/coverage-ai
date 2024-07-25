@@ -150,7 +150,6 @@ class PromptBuilder:
             logging.error(f"Error rendering prompt: {e}")
             return {"system": "", "user": ""}
 
-        # print(f"#### user_prompt:\n\n{user_prompt}")
         return {"system": system_prompt, "user": user_prompt}
 
     def build_prompt_custom(self, file) -> dict:
