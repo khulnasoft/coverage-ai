@@ -1,5 +1,3 @@
-import pytest
-from unittest.mock import patch
 from coverage_ai.Runner import Runner  # Adjust the import path as necessary
 
 
