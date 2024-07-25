@@ -119,3 +119,12 @@ sh tests_integration/test_with_docker.sh \
   --code-coverage-report-path "coverage/cobertura-coverage.xml" \
   --desired-coverage "55" \
   --model $MODEL
+
+# Ruby Sinatra Example
+sh tests_integration/test_with_docker.sh \
+  --dockerfile "templated_tests/ruby_sinatra/Dockerfile" \
+  --source-file-path "app.rb" \
+  --test-file-path "test_app.rb" \
+  --test-command "ruby test_app.rb" \
+  --code-coverage-report-path "coverage/coverage.xml" \
+  --model $MODEL
