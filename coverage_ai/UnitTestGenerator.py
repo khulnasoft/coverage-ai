@@ -127,10 +127,10 @@ class UnitTestGenerator:
         stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
             command=self.test_command, cwd=self.test_command_dir
         )
-        assert (
-            exit_code == 0
-        ), f'Fatal: Error running test command. Are you sure the command is correct? "{self.test_command}"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}'
-
+        if (
+            exit_code != 0
+        ):
+            raise AssertionError(f'Fatal: Error running test command. Are you sure the command is correct? "{self.test_command}"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}')
         # Instantiate CoverageProcessor and process the coverage report
         coverage_processor = CoverageProcessor(
             file_path=self.code_coverage_report_path,
