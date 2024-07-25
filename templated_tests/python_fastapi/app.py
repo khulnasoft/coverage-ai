@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from datetime import date, datetime
+from datetime import date
 
 app = FastAPI()
 

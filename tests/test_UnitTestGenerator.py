@@ -1,4 +1,3 @@
-import pytest
 from coverage_ai.UnitTestGenerator import (
     UnitTestGenerator,
     extract_error_message_python,

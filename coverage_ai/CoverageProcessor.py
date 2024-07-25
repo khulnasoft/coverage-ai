@@ -1,6 +1,5 @@
 from typing import Literal, Tuple
 import os
-import time
 import re
 import csv
 import xml.etree.ElementTree as ET
