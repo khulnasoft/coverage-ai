@@ -1,6 +1,6 @@
 import os
 import argparse
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import pytest
 from coverage_ai.main import parse_args, main
 
