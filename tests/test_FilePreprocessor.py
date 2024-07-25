@@ -1,4 +1,3 @@
-import pytest
 import tempfile
 import textwrap
 from coverage_ai.FilePreprocessor import FilePreprocessor
