@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch, mock_open
+from unittest.mock import mock_open
 from coverage_ai.PromptBuilder import PromptBuilder
 
 
