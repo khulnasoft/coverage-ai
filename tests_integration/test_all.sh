@@ -109,3 +109,13 @@ sh tests_integration/test_with_docker.sh \
   --test-file-path "test_app.py" \
   --test-command "pytest --cov=. --cov-report=xml --cov-report=term" \
   --model "gpt-3.5-turbo"
+
+# React Calculator Example
+sh tests_integration/test_with_docker.sh \
+  --dockerfile "templated_tests/react_calculator/Dockerfile" \
+  --source-file-path "src/modules/Calculator.js" \
+  --test-file-path "src/tests/Calculator.test.js" \
+  --test-command "npm run test" \
+  --code-coverage-report-path "coverage/cobertura-coverage.xml" \
+  --desired-coverage "55" \
+  --model $MODEL
