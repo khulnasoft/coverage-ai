@@ -9,6 +9,7 @@ from coverage_ai.CoverageAi import CoverageAi
 # List of source/test files to iterate over:
 SOURCE_TEST_FILE_LIST = [
     ["coverage_ai/AICaller.py", "tests/test_AICaller.py"],
+    # ["coverage_ai/CoverageAi.py",               "tests/test_CoverageAi.py"],
     ["coverage_ai/CoverageProcessor.py", "tests/test_CoverageProcessor.py"],
     ["coverage_ai/FilePreprocessor.py", "tests/test_FilePreprocessor.py"],
     ["coverage_ai/PromptBuilder.py", "tests/test_PromptBuilder.py"],
@@ -17,6 +18,8 @@ SOURCE_TEST_FILE_LIST = [
     ["coverage_ai/UnitTestGenerator.py", "tests/test_UnitTestGenerator.py"],
     ["coverage_ai/version.py", "tests/test_version.py"],
     ["coverage_ai/utils.py", "tests/test_load_yaml.py"],
+    # ["coverage_ai/settings/config_loader.py", "tests/test_.py"],
+    # ["coverage_ai/CustomLogger.py",             ""],
 ]
 
 
@@ -41,7 +44,7 @@ class Args:
 
 
 if __name__ == "__main__":
-    # Iterate through list of source and test files to run Coverage Ai
+    # Iterate through list of source and test files to run Cover Agent
     for source_file, test_file in SOURCE_TEST_FILE_LIST:
         # Print a banner for the current source file
         banner = f"Testing source file: {source_file}"
