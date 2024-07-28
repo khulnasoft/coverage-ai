@@ -5,7 +5,8 @@ from coverage_ai.FilePreprocessor import FilePreprocessor
 
 class TestFilePreprocessor:
     # Test for a C file
-    def test_c_file(self):
+    @staticmethod
+    def test_c_file():
         with tempfile.NamedTemporaryFile(delete=False, suffix=".c") as tmp:
             preprocessor = FilePreprocessor(tmp.name)
             input_text = "Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit,\nsed do eiusmod tempor incididunt."
@@ -15,7 +16,8 @@ class TestFilePreprocessor:
             ), "C file processing should not alter the text."
 
     # Test for a Python file with only a function
-    def test_py_file_with_function_only(self):
+    @staticmethod
+    def test_py_file_with_function_only():
         with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as tmp:
             tmp.write(b"def function():\n    pass\n")
             tmp.close()
@@ -27,7 +29,8 @@ class TestFilePreprocessor:
             ), "Python file without class should not alter the text."
 
     # Test for a Python file with a comment that looks like a class definition
-    def test_py_file_with_commented_class(self):
+    @staticmethod
+    def test_py_file_with_commented_class():
         with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as tmp:
             tmp.write(b"# class myPythonFile:\n#    pass\n")
             tmp.close()
@@ -39,7 +42,8 @@ class TestFilePreprocessor:
             ), "Commented class definition should not trigger processing."
 
     # Test for a Python file with an actual class definition
-    def test_py_file_with_class(self):
+    @staticmethod
+    def test_py_file_with_class():
         with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as tmp:
             tmp.write(b"class MyClass:\n    def method(self):\n        pass\n")
             tmp.close()
@@ -51,7 +55,8 @@ class TestFilePreprocessor:
                 processed_text == expected_output
             ), "Python file with class should indent the text."
 
-    def test_py_file_with_syntax_error(self):
+    @staticmethod
+    def test_py_file_with_syntax_error():
         with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as tmp:
             tmp.write(b"def function(:\n    pass\n")  # Invalid syntax
             tmp.close()
