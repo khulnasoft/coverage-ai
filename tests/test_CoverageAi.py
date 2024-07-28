@@ -7,7 +7,8 @@ from coverage_ai.main import parse_args
 
 
 class TestCoverageAi:
-    def test_parse_args(self):
+    @staticmethod
+    def test_parse_args():
         with patch(
             "sys.argv",
             [
