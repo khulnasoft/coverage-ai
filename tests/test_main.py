@@ -57,9 +57,8 @@ class TestMain:
         parse_args = lambda: args  # Mocking parse_args function
         mock_isfile.return_value = False  # Simulate source file not found
 
-        with patch("coverage_ai.main.parse_args", parse_args):
-            with pytest.raises(FileNotFoundError) as exc_info:
-                main()
+        with patch("coverage_ai.main.parse_args", parse_args), pytest.raises(FileNotFoundError) as exc_info:
+            main()
 
         assert (
             str(exc_info.value) == f"Source file not found at {args.source_file_path}"
@@ -90,8 +89,7 @@ class TestMain:
         mock_isfile.side_effect = [True, False]
         mock_exists.return_value = True
 
-        with patch("coverage_ai.main.parse_args", parse_args):
-            with pytest.raises(FileNotFoundError) as exc_info:
-                main()
+        with patch("coverage_ai.main.parse_args", parse_args), pytest.raises(FileNotFoundError) as exc_info:
+            main()
 
         assert str(exc_info.value) == f"Test file not found at {args.test_file_path}"
