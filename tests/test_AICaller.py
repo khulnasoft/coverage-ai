@@ -104,7 +104,8 @@ class TestAICaller:
             assert prompt_tokens == 2
             assert response_tokens == 10
 
-    def test_call_model_missing_keys(self, ai_caller):
+    @staticmethod
+    def test_call_model_missing_keys(ai_caller):
         prompt = {"user": "Hello, world!"}
         with pytest.raises(KeyError) as exc_info:
             ai_caller.call_model(prompt)

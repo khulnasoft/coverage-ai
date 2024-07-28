@@ -75,7 +75,8 @@ class UnitTestGenerator:
         self.run_coverage()
         self.prompt = self.build_prompt()
 
-    def get_code_language(self, source_file_path):
+    @staticmethod
+    def get_code_language(source_file_path):
         """
         Get the programming language based on the file extension of the provided source file path.
 

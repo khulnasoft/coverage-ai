@@ -10,7 +10,8 @@ class TestPromptBuilder:
         monkeypatch.setattr("builtins.open", mock_open_obj)
         self.mock_open_obj = mock_open_obj
 
-    def test_initialization_reads_file_contents(self):
+    @staticmethod
+    def test_initialization_reads_file_contents():
         builder = PromptBuilder(
             "source_path",
             "test_path",
@@ -21,7 +22,8 @@ class TestPromptBuilder:
         assert builder.code_coverage_report == "dummy content"
         assert builder.included_files == ""  # Updated expected value
 
-    def test_initialization_handles_file_read_errors(self, monkeypatch):
+    @staticmethod
+    def test_initialization_handles_file_read_errors(monkeypatch):
         def mock_open_raise(*args, **kwargs):
             raise IOError("File not found")
 
@@ -35,7 +37,8 @@ class TestPromptBuilder:
         assert "Error reading source_path" in builder.source_file
         assert "Error reading test_path" in builder.test_file
 
-    def test_empty_included_files_section_not_in_prompt(self, monkeypatch):
+    @staticmethod
+    def test_empty_included_files_section_not_in_prompt(monkeypatch):
         # Disable the monkeypatch for open within this test
         monkeypatch.undo()
         builder = PromptBuilder(
@@ -53,7 +56,8 @@ class TestPromptBuilder:
         result = builder.build_prompt()
         assert "## Additional Includes" not in result["user"]
 
-    def test_non_empty_included_files_section_in_prompt(self, monkeypatch):
+    @staticmethod
+    def test_non_empty_included_files_section_in_prompt(monkeypatch):
         # Disable the monkeypatch for open within this test
         monkeypatch.undo()
         builder = PromptBuilder(
@@ -71,7 +75,8 @@ class TestPromptBuilder:
         assert "## Additional Includes" in result["user"]
         assert "Included Files Content" in result["user"]
 
-    def test_empty_additional_instructions_section_not_in_prompt(self, monkeypatch):
+    @staticmethod
+    def test_empty_additional_instructions_section_not_in_prompt(monkeypatch):
         # Disable the monkeypatch for open within this test
         monkeypatch.undo()
         builder = PromptBuilder(
@@ -87,7 +92,8 @@ class TestPromptBuilder:
         result = builder.build_prompt()
         assert "## Additional Instructions" not in result["user"]
 
-    def test_empty_failed_test_runs_section_not_in_prompt(self, monkeypatch):
+    @staticmethod
+    def test_empty_failed_test_runs_section_not_in_prompt(monkeypatch):
         # Disable the monkeypatch for open within this test
         monkeypatch.undo()
         builder = PromptBuilder(
@@ -103,7 +109,8 @@ class TestPromptBuilder:
         result = builder.build_prompt()
         assert "## Previous Iterations Failed Tests" not in result["user"]
 
-    def test_non_empty_additional_instructions_section_in_prompt(self, monkeypatch):
+    @staticmethod
+    def test_non_empty_additional_instructions_section_in_prompt(monkeypatch):
         # Disable the monkeypatch for open within this test
         monkeypatch.undo()
         builder = PromptBuilder(
@@ -121,7 +128,8 @@ class TestPromptBuilder:
         assert "Additional Instructions Content" in result["user"]
 
     # we currently disabled the logic to add failed test runs to the prompt
-    def test_non_empty_failed_test_runs_section_in_prompt(self, monkeypatch):
+    @staticmethod
+    def test_non_empty_failed_test_runs_section_in_prompt(monkeypatch):
         # Disable the monkeypatch for open within this test
         monkeypatch.undo()
         builder = PromptBuilder(
@@ -139,7 +147,8 @@ class TestPromptBuilder:
         assert "## Previous Iterations Failed Tests" in result["user"]
         assert "Failed Test Runs Content" in result["user"]
 
-    def test_build_prompt_custom_handles_rendering_exception(self, monkeypatch):
+    @staticmethod
+    def test_build_prompt_custom_handles_rendering_exception(monkeypatch):
         def mock_render(*args, **kwargs):
             raise Exception("Rendering error")
 
@@ -156,7 +165,8 @@ class TestPromptBuilder:
         result = builder.build_prompt_custom("custom_file")
         assert result == {"system": "", "user": ""}
 
-    def test_build_prompt_handles_rendering_exception(self, monkeypatch):
+    @staticmethod
+    def test_build_prompt_handles_rendering_exception(monkeypatch):
         def mock_render(*args, **kwargs):
             raise Exception("Rendering error")
 

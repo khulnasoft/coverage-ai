@@ -7,7 +7,8 @@ from coverage_ai.main import parse_args
 
 
 class TestCoverageAi:
-    def test_parse_args(self):
+    @staticmethod
+    def test_parse_args():
         with patch(
             "sys.argv",
             [
@@ -57,9 +58,8 @@ class TestCoverageAi:
         parse_args = lambda: args
         mock_isfile.return_value = False
 
-        with patch("coverage_ai.main.parse_args", parse_args):
-            with pytest.raises(FileNotFoundError) as exc_info:
-                agent = CoverageAi(args)
+        with patch("coverage_ai.main.parse_args", parse_args), pytest.raises(FileNotFoundError) as exc_info:
+            agent = CoverageAi(args)
 
         assert (
             str(exc_info.value) == f"Source file not found at {args.source_file_path}"
@@ -91,8 +91,7 @@ class TestCoverageAi:
         mock_isfile.side_effect = [True, False]
         mock_exists.return_value = True
 
-        with patch("coverage_ai.main.parse_args", parse_args):
-            with pytest.raises(FileNotFoundError) as exc_info:
-                agent = CoverageAi(args)
+        with patch("coverage_ai.main.parse_args", parse_args), pytest.raises(FileNotFoundError) as exc_info:
+            agent = CoverageAi(args)
 
         assert str(exc_info.value) == f"Test file not found at {args.test_file_path}"

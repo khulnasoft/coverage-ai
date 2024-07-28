@@ -98,7 +98,8 @@ class PromptBuilder:
             else ""
         )
 
-    def _read_file(self, file_path):
+    @staticmethod
+    def _read_file(file_path):
         """
         Helper method to read file contents.
 

@@ -94,6 +94,14 @@ class CoverageAi:
             else:
                 self.logger.info(failure_message)
 
+        # Provide metric on total token usage
+        self.logger.info(
+            f"Total number of input tokens used for LLM model {self.test_gen.ai_caller.model}: {self.test_gen.total_input_token_count}"
+        )
+        self.logger.info(
+            f"Total number of output tokens used for LLM model {self.test_gen.ai_caller.model}: {self.test_gen.total_output_token_count}"
+        )
+
         ReportGenerator.generate_report(test_results_list, self.args.report_filepath)
 
         if "WANDB_API_KEY" in os.environ:

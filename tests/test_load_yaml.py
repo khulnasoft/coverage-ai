@@ -9,12 +9,14 @@ from coverage_ai.utils import load_yaml
 
 class TestLoadYaml:
     #  Tests that load_yaml loads a valid YAML string
-    def test_load_valid_yaml(self):
+    @staticmethod
+    def test_load_valid_yaml():
         yaml_str = "name: John Smith\nage: 35"
         expected_output = {"name": "John Smith", "age": 35}
         assert load_yaml(yaml_str) == expected_output
 
-    def test_load_invalid_yaml1(self):
+    @staticmethod
+    def test_load_invalid_yaml1():
         yaml_str = '''\
 PR Analysis:
   Main theme: Enhancing the `/describe` command prompt by adding title and description
@@ -65,7 +67,8 @@ PR Feedback:
             == expected_output
         )
 
-    def test_load_invalid_yaml2(self):
+    @staticmethod
+    def test_load_invalid_yaml2():
         yaml_str = """\
 - relevant file: src/app.py:
   suggestion content: The print statement is outside inside the if __name__ ==: \
