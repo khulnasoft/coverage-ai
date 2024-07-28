@@ -30,7 +30,8 @@ class TestReportGeneration:
         expected_end = "</html>"
         return expected_start, expected_table_header, expected_row_content, expected_end
 
-    def test_generate_report(self, sample_results, expected_output, tmp_path):
+    @staticmethod
+    def test_generate_report(sample_results, expected_output, tmp_path):
         report_path = tmp_path / "test_report.html"
         ReportGenerator.generate_report(sample_results, str(report_path))
 
