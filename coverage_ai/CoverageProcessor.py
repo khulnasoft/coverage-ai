@@ -1,225 +1,249 @@
-from typing import Literal, Tuple
-import os
-import re
-import csv
+import pytest
 import xml.etree.ElementTree as ET
-from coverage_ai.CustomLogger import CustomLogger
+from coverage_ai.CoverageProcessor import CoverageProcessor
 
 
-class CoverageProcessor:
-    def __init__(
-        self,
-        file_path: str,
-        src_file_path: str,
-        coverage_type: Literal["cobertura", "lcov", "jacoco"],
-    ):
+@pytest.fixture
+def mock_xml_tree(monkeypatch):
+    """
+    Creates a mock function to simulate the ET.parse method, returning a mocked XML tree structure.
+    """
+
+    def mock_parse(file_path):
+        # Mock XML structure for the test
+        xml_str = """<coverage>
+                        <packages>
+                            <package>
+                                <classes>
+                                    <class filename="app.py">
+                                        <lines>
+                                            <line number="1" hits="1"/>
+                                            <line number="2" hits="0"/>
+                                        </lines>
+                                    </class>
+                                </classes>
+                            </package>
+                        </packages>
+                     </coverage>"""
+        root = ET.ElementTree(ET.fromstring(xml_str))
+        return root
+
+    monkeypatch.setattr(ET, "parse", mock_parse)
+
+
+class TestCoverageProcessor:
+    @pytest.fixture
+    def processor(self):
+        # Initializes CoverageProcessor with cobertura coverage type for each test
+        return CoverageProcessor("fake_path", "app.py", "cobertura")
+
+    def test_parse_coverage_report_cobertura(self, mock_xml_tree, processor):
         """
-        Initializes a CoverageProcessor object.
-
-        Args:
-            file_path (str): The path to the coverage report file.
-            src_file_path (str): The fully qualified path of the file for which coverage data is being processed.
-            coverage_type (Literal["cobertura", "lcov"]): The type of coverage report being processed.
-
-        Attributes:
-            file_path (str): The path to the coverage report file.
-            src_file_path (str): The fully qualified path of the file for which coverage data is being processed.
-            coverage_type (Literal["cobertura", "lcov"]): The type of coverage report being processed.
-            logger (CustomLogger): The logger object for logging messages.
-
-        Returns:
-            None
+        Tests the parse_coverage_report method for correct line number and coverage calculation with Cobertura reports.
         """
-        self.file_path = file_path
-        self.src_file_path = src_file_path
-        self.coverage_type = coverage_type
-        self.logger = CustomLogger.get_logger(__name__)
+        covered_lines, missed_lines, coverage_pct = processor.parse_coverage_report()
 
-    def process_coverage_report(
-        self, time_of_test_command: int
-    ) -> Tuple[list, list, float]:
-        """
-        Verifies the coverage report's existence and update time, and then
-        parses the report based on its type to extract coverage data.
+        assert covered_lines == [1], "Should list line 1 as covered"
+        assert missed_lines == [2], "Should list line 2 as missed"
+        assert coverage_pct == 0.5, "Coverage should be 50 percent"
 
-        Args:
-            time_of_test_command (int): The time the test command was run, in milliseconds.
+    def test_correct_parsing_for_matching_package_and_class(self, mocker):
+        # Setup
+        mock_open = mocker.patch(
+            "builtins.open",
+            mocker.mock_open(
+                read_data="PACKAGE,CLASS,LINE_MISSED,LINE_COVERED\ncom.example,MyClass,5,10"
+            ),
+        )
+        mocker.patch(
+            "csv.DictReader",
+            return_value=[
+                {
+                    "PACKAGE": "com.example",
+                    "CLASS": "MyClass",
+                    "LINE_MISSED": "5",
+                    "LINE_COVERED": "10",
+                }
+            ],
+        )
+        processor = CoverageProcessor(
+            "path/to/coverage_report.csv", "path/to/MyClass.java", "jacoco"
+        )
 
-        Returns:
-            Tuple[list, list, float]: A tuple containing lists of covered and missed line numbers, and the coverage percentage.
-        """
-        self.verify_report_update(time_of_test_command)
-        return self.parse_coverage_report()
+        # Action
+        missed, covered = processor.parse_missed_covered_lines_jacoco(
+            "com.example", "MyClass"
+        )
 
-    def verify_report_update(self, time_of_test_command: int):
-        """
-        Verifies the coverage report's existence and update time.
+        # Assert
+        assert missed == 5
+        assert covered == 10
 
-        Args:
-            time_of_test_command (int): The time the test command was run, in milliseconds.
+    def test_returns_empty_lists_and_float(self, mocker):
+        # Mocking the necessary methods
+        mocker.patch(
+            "coverage_ai.CoverageProcessor.CoverageProcessor.extract_package_and_class_java",
+            return_value=("com.example", "Example"),
+        )
+        mocker.patch(
+            "coverage_ai.CoverageProcessor.CoverageProcessor.parse_missed_covered_lines_jacoco",
+            return_value=(0, 0),
+        )
 
-        Raises:
-            AssertionError: If the coverage report does not exist or was not updated after the test command.
-        """
-        if not os.path.exists(
-            self.file_path
+        # Initialize the CoverageProcessor object
+        coverage_processor = CoverageProcessor(
+            file_path="path/to/coverage.xml",
+            src_file_path="path/to/example.java",
+            coverage_type="jacoco",
+        )
+
+        # Invoke the parse_coverage_report_jacoco method
+        lines_covered, lines_missed, coverage_percentage = (
+            coverage_processor.parse_coverage_report_jacoco()
+        )
+
+        # Assert the results
+        assert lines_covered == [], "Expected lines_covered to be an empty list"
+        assert lines_missed == [], "Expected lines_missed to be an empty list"
+        assert coverage_percentage == 0, "Expected coverage percentage to be 0"
+
+    def test_parse_coverage_report_unsupported_type(self):
+        processor = CoverageProcessor("fake_path", "app.py", "unsupported_type")
+        with pytest.raises(
+            ValueError, match="Unsupported coverage report type: unsupported_type"
         ):
-            raise AssertionError(f'Fatal: Coverage report "{self.file_path}" was not generated.')
+            processor.parse_coverage_report()
 
-        # Convert file modification time to milliseconds for comparison
-        file_mod_time_ms = int(round(os.path.getmtime(self.file_path) * 1000))
+    def test_extract_package_and_class_java_file_error(self, mocker):
+        mocker.patch("builtins.open", side_effect=FileNotFoundError("File not found"))
+        processor = CoverageProcessor("fake_path", "path/to/MyClass.java", "jacoco")
+        with pytest.raises(FileNotFoundError, match="File not found"):
+            processor.extract_package_and_class_java()
 
-        if (
-            file_mod_time_ms <= time_of_test_command
-        ):
-            raise AssertionError(f"Fatal: The coverage report file was not updated after the test command. file_mod_time_ms: {file_mod_time_ms}, time_of_test_command: {time_of_test_command}. {file_mod_time_ms > time_of_test_command}")
+    def test_extract_package_and_class_java(self, mocker):
+        java_file_content = """
+        package com.example;
     
-    def parse_coverage_report(self) -> Tuple[list, list, float]:
+        public class MyClass {
+            // class content
+        }
         """
-        Parses a code coverage report to extract covered and missed line numbers for a specific file,
-        and calculates the coverage percentage, based on the specified coverage report type.
+        mocker.patch("builtins.open", mocker.mock_open(read_data=java_file_content))
+        processor = CoverageProcessor("fake_path", "path/to/MyClass.java", "jacoco")
+        package_name, class_name = processor.extract_package_and_class_java()
+        assert (
+            package_name == "com.example"
+        ), "Expected package name to be 'com.example'"
+        assert class_name == "MyClass", "Expected class name to be 'MyClass'"
 
-        Returns:
-            Tuple[list, list, float]: A tuple containing lists of covered and missed line numbers, and the coverage percentage.
-        """
-        if self.coverage_type == "cobertura":
-            return self.parse_coverage_report_cobertura()
-        elif self.coverage_type == "lcov":
-            return self.parse_coverage_report_lcov()
-        elif self.coverage_type == "jacoco":
-            return self.parse_coverage_report_jacoco()
-        else:
-            raise ValueError(f"Unsupported coverage report type: {self.coverage_type}")
+    def test_verify_report_update_file_not_updated(self, mocker):
+        mocker.patch("os.path.exists", return_value=True)
+        mocker.patch("os.path.getmtime", return_value=1234567.0)
 
-    def parse_coverage_report_cobertura(self) -> Tuple[list, list, float]:
-        """
-        Parses a Cobertura XML code coverage report to extract covered and missed line numbers for a specific file,
-        and calculates the coverage percentage.
+        processor = CoverageProcessor("fake_path", "app.py", "cobertura")
+        with pytest.raises(
+            AssertionError,
+            match="Fatal: The coverage report file was not updated after the test command.",
+        ):
+            processor.verify_report_update(1234567890)
 
-        Returns:
-            Tuple[list, list, float]: A tuple containing lists of covered and missed line numbers, and the coverage percentage.
-        """
-        tree = ET.parse(self.file_path)
-        root = tree.getroot()
-        lines_covered, lines_missed = [], []
-        filename = os.path.basename(self.src_file_path)
+    def test_verify_report_update_file_not_exist(self, mocker):
+        mocker.patch("os.path.exists", return_value=False)
 
-        for cls in root.findall(".//class"):
-            name_attr = cls.get("filename")
-            if name_attr and name_attr.endswith(filename):
-                for line in cls.findall(".//line"):
-                    line_number = int(line.get("number"))
-                    hits = int(line.get("hits"))
-                    if hits > 0:
-                        lines_covered.append(line_number)
-                    else:
-                        lines_missed.append(line_number)
-                break  # Assuming filename is unique, break after finding and processing it
+        processor = CoverageProcessor("fake_path", "app.py", "cobertura")
+        with pytest.raises(
+            AssertionError,
+            match='Fatal: Coverage report "fake_path" was not generated.',
+        ):
+            processor.verify_report_update(1234567890)
 
-        total_lines = len(lines_covered) + len(lines_missed)
-        coverage_percentage = (
-            (len(lines_covered) / total_lines) if total_lines > 0 else 0
+    def test_process_coverage_report(self, mocker):
+        mock_verify = mocker.patch(
+            "coverage_ai.CoverageProcessor.CoverageProcessor.verify_report_update"
+        )
+        mock_parse = mocker.patch(
+            "coverage_ai.CoverageProcessor.CoverageProcessor.parse_coverage_report",
+            return_value=([], [], 0.0),
         )
 
-        return lines_covered, lines_missed, coverage_percentage
-        
-    def parse_coverage_report_lcov(self):
+        processor = CoverageProcessor("fake_path", "app.py", "cobertura")
+        result = processor.process_coverage_report(1234567890)
 
-        lines_covered, lines_missed = [], []
-        filename = os.path.basename(self.src_file_path)
-        try: 
-            with open(self.file_path, "r") as file:
-                for line in file:
-                    line = line.strip()
-                    if line.startswith("SF:"):
-                        if line.endswith(filename):
-                            for line in file:
-                                line = line.strip()
-                                if line.startswith("DA:"):
-                                    line_number = line.replace("DA:", "").split(",")[0]
-                                    hits = line.replace("DA:", "").split(",")[1]
-                                    if int(hits) > 0:
-                                        lines_covered.append(int(line_number))
-                                    else:
-                                        lines_missed.append(int(line_number))
-                                elif line.startswith("end_of_record"):
-                                    break
+        mock_verify.assert_called_once_with(1234567890)
+        mock_parse.assert_called_once()
+        assert result == ([], [], 0.0), "Expected result to be ([], [], 0.0)"
 
-        except (FileNotFoundError, IOError) as e:
-            self.logger.error(f"Error reading file {self.file_path}: {e}")
-            raise
+    def test_parse_missed_covered_lines_jacoco_key_error(self, mocker):
+        mock_open = mocker.patch(
+            "builtins.open",
+            mocker.mock_open(
+                read_data="PACKAGE,CLASS,LINE_MISSED,LINE_COVERED\ncom.example,MyClass,5,10"
+            ),
+        )
+        mocker.patch(
+            "csv.DictReader",
+            return_value=[
+                {"PACKAGE": "com.example", "CLASS": "MyClass", "LINE_MISSED": "5"}
+            ],
+        )  # Missing 'LINE_COVERED'
 
-        total_lines = len(lines_covered) + len(lines_missed)
-        coverage_percentage = (
-            (len(lines_covered) / total_lines) if total_lines > 0 else 0
+        processor = CoverageProcessor(
+            "path/to/coverage_report.csv", "path/to/MyClass.java", "jacoco"
         )
 
-        return lines_covered, lines_missed, coverage_percentage
-        
-    def parse_coverage_report_jacoco(self) -> Tuple[list, list, float]:
+        with pytest.raises(KeyError):
+            processor.parse_missed_covered_lines_jacoco("com.example", "MyClass")
+
+    def test_parse_coverage_report_lcov_no_coverage_data(self, mocker):
         """
-        Parses a JaCoCo XML code coverage report to extract covered and missed line numbers for a specific file,
-        and calculates the coverage percentage.
-
-        Returns: Tuple[list, list, float]: A tuple containing empty lists of covered and missed line numbers,
-        and the coverage percentage. The reason being the format of the report for jacoco gives the totals we do not
-        sum them up. to stick with the current contract of the code and to do little change returning empty arrays.
-        I expect this should bring up a discussion on introduce a factory for different CoverageProcessors. Where the
-        total coverage percentage is returned to be evaluated only.
+        Test parse_coverage_report_lcov returns empty lists and 0 coverage when the lcov report contains no relevant data.
         """
-        lines_covered, lines_missed = [], []
+        mocker.patch("builtins.open", mocker.mock_open(read_data=""))
+        processor = CoverageProcessor("empty_report.lcov", "app.py", "lcov")
+        covered_lines, missed_lines, coverage_pct = processor.parse_coverage_report_lcov()
+        assert covered_lines == [], "Expected no covered lines"
+        assert missed_lines == [], "Expected no missed lines"
+        assert coverage_pct == 0, "Expected 0% coverage"
 
-        package_name, class_name = self.extract_package_and_class_java()
-        missed, covered = self.parse_missed_covered_lines_jacoco(
-            package_name, class_name
-        )
+    def test_parse_coverage_report_lcov_with_coverage_data(self, mocker):
+        """
+        Test parse_coverage_report_lcov correctly parses coverage data from an lcov report.
+        """
+        lcov_data = """
+        SF:app.py
+        DA:1,1
+        DA:2,0
+        DA:3,1
+        end_of_record
+        """
+        mocker.patch("builtins.open", mocker.mock_open(read_data=lcov_data))
+        processor = CoverageProcessor("report.lcov", "app.py", "lcov")
+        covered_lines, missed_lines, coverage_pct = processor.parse_coverage_report_lcov()
+        assert covered_lines == [1, 3], "Expected lines 1 and 3 to be covered"
+        assert missed_lines == [2], "Expected line 2 to be missed"
+        assert coverage_pct == 2/3, "Expected 66.67% coverage"
 
-        total_lines = missed + covered
-        coverage_percentage = (float(covered) / total_lines) if total_lines > 0 else 0
-
-        return lines_covered, lines_missed, coverage_percentage
-
-    def parse_missed_covered_lines_jacoco(
-        self, package_name: str, class_name: str
-    ) -> tuple[int, int]:
-        with open(self.file_path, "r") as file:
-            reader = csv.DictReader(file)
-            missed, covered = 0, 0
-            for row in reader:
-                if row["PACKAGE"] == package_name and row["CLASS"] == class_name:
-                    try:
-                        missed = int(row["LINE_MISSED"])
-                        covered = int(row["LINE_COVERED"])
-                        break
-                    except KeyError as e:
-                        self.logger.error("Missing expected column in CSV: {e}")
-                        raise
-
-        return missed, covered
-
-    def extract_package_and_class_java(self):
-        package_pattern = re.compile(r"^\s*package\s+([\w\.]+)\s*;.*$")
-        class_pattern = re.compile(r"^\s*public\s+class\s+(\w+).*")
-
-        package_name = ""
-        class_name = ""
-        try:
-            with open(self.src_file_path, "r") as file:
-                for line in file:
-                    if not package_name:  # Only match package if not already found
-                        package_match = package_pattern.match(line)
-                        if package_match:
-                            package_name = package_match.group(1)
-
-                    if not class_name:  # Only match class if not already found
-                        class_match = class_pattern.match(line)
-                        if class_match:
-                            class_name = class_match.group(1)
-
-                    if package_name and class_name:  # Exit loop if both are found
-                        break
-        except (FileNotFoundError, IOError) as e:
-            self.logger.error(f"Error reading file {self.src_file_path}: {e}")
-            raise
-
-        return package_name, class_name
+    def test_parse_coverage_report_lcov_with_multiple_files(self, mocker):
+        """
+        Test parse_coverage_report_lcov correctly parses coverage data for the target file among multiple files in the lcov report.
+        """
+        lcov_data = """
+        SF:other.py
+        DA:1,1
+        DA:2,0
+        end_of_record
+        SF:app.py
+        DA:1,1
+        DA:2,0
+        DA:3,1
+        end_of_record
+        SF:another.py
+        DA:1,1
+        end_of_record
+        """
+        mocker.patch("builtins.open", mocker.mock_open(read_data=lcov_data))
+        processor = CoverageProcessor("report.lcov", "app.py", "lcov")
+        covered_lines, missed_lines, coverage_pct = processor.parse_coverage_report_lcov()
+        assert covered_lines == [1, 3], "Expected lines 1 and 3 to be covered for app.py"
+        assert missed_lines == [2], "Expected line 2 to be missed for app.py"
+        assert coverage_pct == 2/3, "Expected 66.67% coverage for app.py"
