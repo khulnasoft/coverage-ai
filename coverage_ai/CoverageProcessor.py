@@ -1,5 +1,6 @@
 from typing import Literal, Tuple
 import os
+import time
 import re
 import csv
 import xml.etree.ElementTree as ET
@@ -61,19 +62,17 @@ class CoverageProcessor:
         Raises:
             AssertionError: If the coverage report does not exist or was not updated after the test command.
         """
-        if not os.path.exists(
+        assert os.path.exists(
             self.file_path
-        ):
-            raise AssertionError(f'Fatal: Coverage report "{self.file_path}" was not generated.')
+        ), f'Fatal: Coverage report "{self.file_path}" was not generated.'
 
         # Convert file modification time to milliseconds for comparison
         file_mod_time_ms = int(round(os.path.getmtime(self.file_path) * 1000))
 
-        if (
-            file_mod_time_ms <= time_of_test_command
-        ):
-            raise AssertionError(f"Fatal: The coverage report file was not updated after the test command. file_mod_time_ms: {file_mod_time_ms}, time_of_test_command: {time_of_test_command}. {file_mod_time_ms > time_of_test_command}")
-    
+        assert (
+            file_mod_time_ms > time_of_test_command
+        ), f"Fatal: The coverage report file was not updated after the test command. file_mod_time_ms: {file_mod_time_ms}, time_of_test_command: {time_of_test_command}. {file_mod_time_ms > time_of_test_command}"
+
     def parse_coverage_report(self) -> Tuple[list, list, float]:
         """
         Parses a code coverage report to extract covered and missed line numbers for a specific file,
@@ -122,7 +121,7 @@ class CoverageProcessor:
         )
 
         return lines_covered, lines_missed, coverage_percentage
-        
+
     def parse_coverage_report_lcov(self):
 
         lines_covered, lines_missed = [], []
@@ -155,7 +154,7 @@ class CoverageProcessor:
         )
 
         return lines_covered, lines_missed, coverage_percentage
-        
+
     def parse_coverage_report_jacoco(self) -> Tuple[list, list, float]:
         """
         Parses a JaCoCo XML code coverage report to extract covered and missed line numbers for a specific file,
