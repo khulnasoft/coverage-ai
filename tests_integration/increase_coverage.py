@@ -9,7 +9,7 @@ from coverage_ai.CoverageAi import CoverageAi
 # List of source/test files to iterate over:
 SOURCE_TEST_FILE_LIST = [
     # ["coverage_ai/AICaller.py", "tests/test_AICaller.py"],
-    ["coverage_ai/CoverageAi.py",               "tests/test_CoverageAi.py"],
+    ["coverage_ai/CoverageAi.py", "tests/test_CoverageAi.py"],
     # ["coverage_ai/CoverageProcessor.py", "tests/test_CoverageProcessor.py"],
     # ["coverage_ai/FilePreprocessor.py", "tests/test_FilePreprocessor.py"],
     # ["coverage_ai/PromptBuilder.py", "tests/test_PromptBuilder.py"],

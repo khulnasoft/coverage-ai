@@ -46,8 +46,8 @@ class UnitTestGenerator:
             coverage_type (str, optional): The type of coverage report. Defaults to "cobertura".
             desired_coverage (int, optional): The desired coverage percentage. Defaults to 90.
             additional_instructions (str, optional): Additional instructions for test generation. Defaults to an empty string.
-            use_report_coverage_feature_flag (bool, optional): Setting this to True considers the coverage of all the files in the coverage report. 
-                                                               This means we consider a test as good if it increases coverage for a different 
+            use_report_coverage_feature_flag (bool, optional): Setting this to True considers the coverage of all the files in the coverage report.
+                                                               This means we consider a test as good if it increases coverage for a different
                                                                file other than the source file. Defaults to False.
 
         Returns:
@@ -66,6 +66,7 @@ class UnitTestGenerator:
         self.language = self.get_code_language(source_file_path)
         self.use_report_coverage_feature_flag = use_report_coverage_feature_flag
         self.last_coverage_percentages = {}
+        self.llm_model = llm_model
 
         # Objects to instantiate
         self.ai_caller = AICaller(model=llm_model, api_base=api_base)
@@ -144,7 +145,7 @@ class UnitTestGenerator:
             file_path=self.code_coverage_report_path,
             src_file_path=self.source_file_path,
             coverage_type=self.coverage_type,
-            use_report_coverage_feature_flag=self.use_report_coverage_feature_flag
+            use_report_coverage_feature_flag=self.use_report_coverage_feature_flag,
         )
 
         # Use the process_coverage_report method of CoverageProcessor, passing in the time the test command was executed
@@ -169,14 +170,14 @@ class UnitTestGenerator:
                     if key == self.source_file_path:
                         self.last_source_file_coverage = percentage_covered
                     if key not in self.last_coverage_percentages:
-                        self.last_coverage_percentages[key] =  0
+                        self.last_coverage_percentages[key] = 0
                     self.last_coverage_percentages[key] = percentage_covered
                 percentage_covered = total_lines_covered / total_lines
 
                 self.logger.info(
                     f"Total lines covered: {total_lines_covered}, Total lines missed: {total_lines_missed}, Total lines: {total_lines}"
                 )
-                self.logger.info(    
+                self.logger.info(
                     f"coverage: Percentage {round(percentage_covered * 100, 2)}%"
                 )
             else:
@@ -421,13 +422,12 @@ class UnitTestGenerator:
 
         return tests_dict
 
-    def validate_test(self, generated_test: dict, generated_tests_dict: dict, num_attempts=1):
+    def validate_test(self, generated_test: dict, num_attempts=1):
         """
         Validate a generated test by inserting it into the test file, running the test, and checking for pass/fail.
 
         Parameters:
             generated_test (dict): The generated test to validate, containing test code and additional imports.
-            generated_tests_dict (dict): A dictionary containing information about the generated tests.
             num_attempts (int, optional): The number of attempts to run the test. Defaults to 1.
 
         Returns:
@@ -449,6 +449,10 @@ class UnitTestGenerator:
             12. Handle any exceptions that occur during the validation process, log the errors, and roll back the test file if necessary.
             13. Log additional details and error messages for failed tests, and optionally, use the Trace class for detailed logging if 'WANDB_API_KEY' is present in the environment variables.
         """
+        # Store original content of the test file
+        with open(self.test_file_path, "r") as test_file:
+            original_content = test_file.read()
+
         try:
             # Step 0: no pre-process.
             # We asked the model that each generated test should be a self-contained independent test
@@ -482,12 +486,10 @@ class UnitTestGenerator:
                         [delta_indent * " " + line for line in test_code.split("\n")]
                     )
             test_code_indented = "\n" + test_code_indented.strip("\n") + "\n"
-            if test_code_indented and relevant_line_number_to_insert_tests_after:
 
+            if test_code_indented and relevant_line_number_to_insert_tests_after:
                 # Step 1: Insert the generated test to the relevant line in the test file
                 additional_imports_lines = ""
-                with open(self.test_file_path, "r") as test_file:
-                    original_content = test_file.read()  # Store original content
                 original_content_lines = original_content.split("\n")
                 test_code_lines = test_code_indented.split("\n")
                 # insert the test code at the relevant line
@@ -526,12 +528,13 @@ class UnitTestGenerator:
                     self.logger.info(
                         f'Running test with the following command: "{self.test_command}"'
                     )
-                    stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
-                        command=self.test_command, cwd=self.test_command_dir
+                    stdout, stderr, exit_code, time_of_test_command = (
+                        Runner.run_command(
+                            command=self.test_command, cwd=self.test_command_dir
+                        )
                     )
                     if exit_code != 0:
                         break
-                
 
                 # Step 3: Check for pass/fail from the Runner object
                 if exit_code != 0:
@@ -546,6 +549,8 @@ class UnitTestGenerator:
                         "stderr": stderr,
                         "stdout": stdout,
                         "test": generated_test,
+                        "original_test_file": original_content,
+                        "processed_test_file": processed_test,
                     }
 
                     error_message = extract_error_message_python(fail_details["stdout"])
@@ -584,8 +589,10 @@ class UnitTestGenerator:
                         self.logger.info(
                             "Using the report coverage feature flag to process the coverage report"
                         )
-                        file_coverage_dict = new_coverage_processor.process_coverage_report(
-                            time_of_test_command=time_of_test_command
+                        file_coverage_dict = (
+                            new_coverage_processor.process_coverage_report(
+                                time_of_test_command=time_of_test_command
+                            )
                         )
                         total_lines_covered = 0
                         total_lines_missed = 0
@@ -624,6 +631,8 @@ class UnitTestGenerator:
                             "stderr": stderr,
                             "stdout": stdout,
                             "test": generated_test,
+                            "original_test_file": original_content,
+                            "processed_test_file": processed_test,
                         }
                         self.failed_test_runs.append(
                             {
@@ -658,6 +667,8 @@ class UnitTestGenerator:
                         "stderr": stderr,
                         "stdout": stdout,
                         "test": generated_test,
+                        "original_test_file": original_content,
+                        "processed_test_file": processed_test,
                     }
                     self.failed_test_runs.append(
                         {
@@ -675,15 +686,19 @@ class UnitTestGenerator:
 
                 self.current_coverage = new_percentage_covered
 
-
                 for key in coverage_percentages:
                     if key not in self.last_coverage_percentages:
                         self.last_coverage_percentages[key] = 0
-                    if coverage_percentages[key] > self.last_coverage_percentages[key] and key == self.source_file_path.split("/")[-1]:
+                    if (
+                        coverage_percentages[key] > self.last_coverage_percentages[key]
+                        and key == self.source_file_path.split("/")[-1]
+                    ):
                         self.logger.info(
                             f"Coverage for provided source file: {key} increased from {round(self.last_coverage_percentages[key] * 100, 2)} to {round(coverage_percentages[key] * 100, 2)}"
                         )
-                    elif coverage_percentages[key] > self.last_coverage_percentages[key]:
+                    elif (
+                        coverage_percentages[key] > self.last_coverage_percentages[key]
+                    ):
                         self.logger.info(
                             f"Coverage for non-source file: {key} increased from {round(self.last_coverage_percentages[key] * 100, 2)} to {round(coverage_percentages[key] * 100, 2)}"
                         )
@@ -699,6 +714,8 @@ class UnitTestGenerator:
                     "stderr": stderr,
                     "stdout": stdout,
                     "test": generated_test,
+                    "original_test_file": original_content,
+                    "processed_test_file": processed_test,
                 }
         except Exception as e:
             self.logger.error(f"Error validating test: {e}")
@@ -709,7 +726,26 @@ class UnitTestGenerator:
                 "stderr": str(e),
                 "stdout": "",
                 "test": generated_test,
+                "original_test_file": original_content,
+                "processed_test_file": "N/A",
             }
+
+    def to_dict(self):
+        return {
+            "source_file_path": self.source_file_path,
+            "test_file_path": self.test_file_path,
+            "code_coverage_report_path": self.code_coverage_report_path,
+            "test_command": self.test_command,
+            "llm_model": self.llm_model,
+            "test_command_dir": self.test_command_dir,
+            "included_files": self.included_files,
+            "coverage_type": self.coverage_type,
+            "desired_coverage": self.desired_coverage,
+            "additional_instructions": self.additional_instructions,
+        }
+
+    def to_json(self):
+        return json.dumps(self.to_dict())
 
 
 def extract_error_message_python(fail_message):

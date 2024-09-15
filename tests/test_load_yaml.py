@@ -9,14 +9,12 @@ from coverage_ai.utils import load_yaml
 
 class TestLoadYaml:
     #  Tests that load_yaml loads a valid YAML string
-    @staticmethod
-    def test_load_valid_yaml():
+    def test_load_valid_yaml(self):
         yaml_str = "name: John Smith\nage: 35"
         expected_output = {"name": "John Smith", "age": 35}
         assert load_yaml(yaml_str) == expected_output
 
-    @staticmethod
-    def test_load_invalid_yaml1():
+    def test_load_invalid_yaml1(self):
         yaml_str = '''\
 PR Analysis:
   Main theme: Enhancing the `/describe` command prompt by adding title and description
@@ -27,7 +25,7 @@ PR Analysis:
 PR Feedback:
   General suggestions: The PR seems to be well-structured and focused on a specific enhancement. However, it would be beneficial to add tests to ensure the new feature works as expected.
   Code feedback:
-    - relevant file: pr_agent/settings/pr_description_prompts.toml
+    - relevant file: pr_action/settings/pr_description_prompts.toml
       suggestion: Consider using a more descriptive variable name than 'user' for the command prompt. A more descriptive name would make the code more readable and maintainable. [medium]
       relevant line: user="""PR Info: aaa
   Security concerns: No'''
@@ -45,7 +43,7 @@ PR Feedback:
                 "General suggestions": "The PR seems to be well-structured and focused on a specific enhancement. However, it would be beneficial to add tests to ensure the new feature works as expected.",
                 "Code feedback": [
                     {
-                        "relevant file": "pr_agent/settings/pr_description_prompts.toml",
+                        "relevant file": "pr_action/settings/pr_description_prompts.toml",
                         "suggestion": "Consider using a more descriptive variable name than 'user' for the command prompt. A more descriptive name would make the code more readable and maintainable. [medium]",
                         "relevant line": 'user="""PR Info: aaa',
                     }
@@ -67,8 +65,7 @@ PR Feedback:
             == expected_output
         )
 
-    @staticmethod
-    def test_load_invalid_yaml2():
+    def test_load_invalid_yaml2(self):
         yaml_str = """\
 - relevant file: src/app.py:
   suggestion content: The print statement is outside inside the if __name__ ==: \

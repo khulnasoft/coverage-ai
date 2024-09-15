@@ -1,5 +1,16 @@
-## coverage-ai
-KhulnaSoft Coverage AI aims to help efficiently increasing code coverage, by automatically generating qualified tests to enhance existing test suites 
+<div align="center">
+
+<div align="center">
+
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://www.khulnasoft.com/images/coverage-ai/coverage-ai-dark.png" width="330">
+  <source media="(prefers-color-scheme: light)" srcset="https://www.khulnasoft.com/images/coverage-ai/coverage-ai-light.png" width="330">
+  <img src="https://www.khulnasoft.com/images/coverage-ai/coverage-ai-light.png" alt="logo" width="330">
+
+</picture>
+<br/>
+KhulnaSoft Coverage Ai aims to help efficiently increasing code coverage, by automatically generating qualified tests to enhance existing test suites
 </div>
 
 [![GitHub license](https://img.shields.io/badge/License-AGPL_3.0-blue.svg)](https://github.com/khulnasoft/coverage-ai/blob/main/LICENSE)
@@ -19,6 +30,15 @@ KhulnaSoft Coverage AI aims to help efficiently increasing code coverage, by aut
 
 
 ## News and Updates
+
+### 2024-06-05:
+The logic and prompts for adding new imports for the generated tests have been improved.
+
+We also added a [usage examples](docs/usage_examples.md) file, with more elaborate examples of how to use the Coverage Ai.
+
+### 2024-06-01:
+Added support for comprehensive logging to [Weights and Biases](https://wandb.ai/). Set the `WANDB_API_KEY` environment variable to enable this feature.
+
 ### 2024-05-26:
 Coverage-Ai now supports nearly any LLM model in the world, using [LiteLLM](#using-other-llms) package.
 
@@ -87,9 +107,12 @@ coverage-ai \
   --included-files "<optional_list_of_files_to_include>"
 ```
 
-You can use the example projects within this repository to run this code as a test.
+You can use the example code below to try out the Coverage Ai.
+(Note that the [usage_examples](docs/usage_examples.md) file provides more elaborate examples of how to use the Coverage Ai)
 
-Follow the steps in the README.md file located in the `templated_tests/python_fastapi/` directory, then return to the root of the repository and run the following command to add tests to the **python readyapi** example:
+#### Python
+
+Follow the steps in the README.md file located in the `templated_tests/python_fastapi/` directory to setup an environment, then return to the root of the repository, and run the following command to add tests to the **python fastapi** example:
 ```shell
 coverage-ai \
   --source-file-path "templated_tests/python_fastapi/app.py" \
@@ -101,6 +124,8 @@ coverage-ai \
   --desired-coverage 70 \
   --max-iterations 10
 ```
+
+#### Go
 
 For an example using **go** `cd` into `templated_tests/go_webservice`, set up the project following the `README.md`.
 To work with coverage reporting, you need to install `gocov` and `gocov-xml`. Run the following commands to install these tools:
@@ -121,24 +146,24 @@ coverage-ai \
   --max-iterations 1
 ```
 
-Try and add more tests to this project by running this command at the root of this repository:
+#### Java
+For an example using **java** `cd` into `templated_tests/java_gradle`, set up the project following the [README.md](templated_tests/java_gradle/README.md).
+To work with jacoco coverage reporting, follow the [README.md](templated_tests/java_gradle/README.md) Requirements section:
+and then run the following command:
 ```shell
-poetry run coverage-ai \
-  --source-file-path "coverage_ai/main.py" \
-  --test-file-path "tests/test_main.py" \
-  --code-coverage-report-path "coverage.xml" \
-  --test-command "poetry run pytest --junitxml=testLog.xml --cov=templated_tests --cov=coverage_ai --cov-report=xml --cov-report=term --log-cli-level=INFO" \
-  --coverage-type "cobertura" \
-  --desired-coverage 70 \
-  --max-iterations 1 \
-  --model "gpt-4o"
+coverage-ai \
+  --source-file-path="src/main/java/com/davidparry/cover/SimpleMathOperations.java" \
+  --test-file-path="src/test/groovy/com/davidparry/cover/SimpleMathOperationsSpec.groovy" \
+  --code-coverage-report-path="build/reports/jacoco/test/jacocoTestReport.csv" \
+  --test-command="./gradlew clean test jacocoTestReport" \
+  --test-command-dir=$(pwd) \
+  --coverage-type="jacoco" \
+  --desired-coverage=70 \
+  --max-iterations=1
 ```
-
-Note: If you are using Poetry then use the `poetry run coverage-ai` command instead of the `coverage-ai` run command.
 
 ### Outputs
 A few debug files will be outputted locally within the repository (that are part of the `.gitignore`)
-* `generated_prompt.md`: The full prompt that is sent to the LLM
 * `run.log`: A copy of the logger that gets dumped to your `stdout`
 * `test_results.html`: A results table that contains the following for each generated test:
   * Test status
@@ -147,6 +172,9 @@ A few debug files will be outputted locally within the repository (that are part
   * `stderr`
   * `stdout`
   * Generated test
+
+### Additional logging
+If you set an environment variable `WANDB_API_KEY`, the prompts, responses, and additional information will be logged to [Weights and Biases](https://wandb.ai/).
 
 ### Using other LLMs
 This project uses LiteLLM to communicate with OpenAI and other hosted LLMs (supporting 100+ LLMs to date). To use a different model other than the OpenAI default you'll need to:
@@ -191,6 +219,9 @@ poetry run pytest --junitxml=testLog.xml --cov=templated_tests --cov=coverage_ai
 ```
 This will also generate all logs and output reports that are generated in `.github/workflows/ci_pipeline.yml`.
 
+### Building the binary locally
+You can build the binary locally simply by invoking the `make installer` command. This will run PyInstaller locally on your machine. Ensure that you have set up the poetry project first (i.e. running `poetry install`).
+
 ## Roadmap
 Below is the roadmap of planned features, with the current implementation status:
 
@@ -198,7 +229,7 @@ Below is the roadmap of planned features, with the current implementation status
   - [x] Being able to generate tests for different programming languages
   - [ ] Being able to deal with a large variety of testing scenarios
   - [ ] Generate a behavior analysis for the code under test, and generate tests accordingly
-  - [ ] Check test flakiness, e.g. by running 5 times as suggested by TestGen-LLM
+  - [x] Check test flakiness, e.g. by running 5 times as suggested by TestGen-LLM
 - [ ] Cover more test generation pains
   - [ ] Generate new tests that are focused on the PR changeset
   - [ ] Run over an entire repo/code-base and attempt to enhance all existing test suites

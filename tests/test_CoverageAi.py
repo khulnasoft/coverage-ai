@@ -115,7 +115,8 @@ class TestCoverageAi:
             additional_instructions="",
             model="openai/test-model",
             api_base="openai/test-api",
-            use_report_coverage_feature_flag=False
+            use_report_coverage_feature_flag=False,
+            log_db_path="",
         )
 
         with pytest.raises(AssertionError) as exc_info:
@@ -123,7 +124,9 @@ class TestCoverageAi:
             agent._duplicate_test_file()
 
         assert "Fatal: Coverage report" in str(exc_info.value)
-        mock_copy.assert_called_once_with(args.test_file_path, args.test_file_output_path)
+        mock_copy.assert_called_once_with(
+            args.test_file_path, args.test_file_output_path
+        )
 
     @patch("coverage_ai.CoverageAi.os.path.isfile", return_value=True)
     def test_duplicate_test_file_without_output_path(self, mock_isfile):
@@ -142,7 +145,8 @@ class TestCoverageAi:
             additional_instructions="",
             model="openai/test-model",
             api_base="openai/test-api",
-            use_report_coverage_feature_flag=False
+            use_report_coverage_feature_flag=False,
+            log_db_path="",
         )
 
         with pytest.raises(AssertionError) as exc_info:

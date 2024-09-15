@@ -1,3 +1,4 @@
+import pytest
 from coverage_ai.UnitTestGenerator import (
     UnitTestGenerator,
     extract_error_message_python,
@@ -9,8 +10,7 @@ from unittest.mock import patch, mock_open
 
 
 class TestUnitTestGenerator:
-    @staticmethod
-    def test_end_to_end1():
+    def test_end_to_end1(self):
         # Test model definitions
         GPT4_TURBO = "gpt-4-turbo-2024-04-09"
         GPT35_TURBO = "gpt-3.5-turbo-0125"
@@ -66,8 +66,7 @@ class TestUnitTestGenerator:
         with open(TEST_FILE, "w") as f:
             f.write(original_file_contents)
 
-    @staticmethod
-    def test_end_to_end2():
+    def test_end_to_end2(self):
         # Test model definitions
         GPT4_TURBO = "gpt-4-turbo-2024-04-09"
         GPT35_TURBO = "gpt-3.5-turbo-0125"
@@ -125,8 +124,7 @@ class TestUnitTestGenerator:
         with open(TEST_FILE, "w") as f:
             f.write(original_file_contents)
 
-    @staticmethod
-    def test_get_included_files_mixed_paths():
+    def test_get_included_files_mixed_paths(self):
         with patch("builtins.open", mock_open(read_data="file content")) as mock_file:
             mock_file.side_effect = [
                 IOError("File not found"),
@@ -139,8 +137,7 @@ class TestUnitTestGenerator:
                 == "file_path: `valid_file2.txt`\ncontent:\n```\nfile content\n```"
             )
 
-    @staticmethod
-    def test_get_included_files_valid_paths():
+    def test_get_included_files_valid_paths(self):
         with patch("builtins.open", mock_open(read_data="file content")):
             included_files = ["file1.txt", "file2.txt"]
             result = UnitTestGenerator.get_included_files(included_files)
@@ -151,15 +148,13 @@ class TestUnitTestGenerator:
 
 
 class TestExtractErrorMessage:
-    @staticmethod
-    def test_extract_single_match():
+    def test_extract_single_match(self):
         fail_message = "=== FAILURES ===\\nError occurred here\\n=== END ==="
         expected = "\\nError occurred here\\n"
         result = extract_error_message_python(fail_message)
         assert result == expected, f"Expected '{expected}', got '{result}'"
 
-    @staticmethod
-    def test_extract_bad_match():
+    def test_extract_bad_match(self):
         fail_message = 33
         expected = ""
         result = extract_error_message_python(fail_message)

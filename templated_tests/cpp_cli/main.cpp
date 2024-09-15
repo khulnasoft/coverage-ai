@@ -1,4 +1,3 @@
-
 #include "calculator.hpp"
 #include <iostream>
 #include <cstdlib>

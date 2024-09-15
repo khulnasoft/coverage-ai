@@ -1,9 +1,10 @@
+import pytest
+from unittest.mock import patch
 from coverage_ai.Runner import Runner  # Adjust the import path as necessary
 
 
 class TestRunner:
-    @staticmethod
-    def test_run_command_success():
+    def test_run_command_success(self):
         """Test the run_command method with a command that succeeds."""
         command = 'echo "Hello, World!"'
         stdout, stderr, exit_code, _ = Runner.run_command(command)
@@ -11,8 +12,7 @@ class TestRunner:
         assert stderr == ""
         assert exit_code == 0
 
-    @staticmethod
-    def test_run_command_with_cwd():
+    def test_run_command_with_cwd(self):
         """Test the run_command method with a specified working directory."""
         command = 'echo "Working Directory"'
         stdout, stderr, exit_code, _ = Runner.run_command(command, cwd="/tmp")
@@ -20,8 +20,7 @@ class TestRunner:
         assert stderr == ""
         assert exit_code == 0
 
-    @staticmethod
-    def test_run_command_failure():
+    def test_run_command_failure(self):
         """Test the run_command method with a command that fails."""
         # Use a command that is guaranteed to fail
         command = "command_that_does_not_exist"

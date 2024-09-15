@@ -5,7 +5,7 @@ import yaml
 from typing import List
 
 
-def load_yaml(response_text: str, keys_fix_yaml: List[str] = None) -> dict:
+def load_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
     """
     Load and parse YAML data from a given response text.
 
@@ -22,8 +22,6 @@ def load_yaml(response_text: str, keys_fix_yaml: List[str] = None) -> dict:
         load_yaml(response_text, keys_fix_yaml=['key1', 'key2'])
 
     """
-    if keys_fix_yaml is None:
-        keys_fix_yaml = []
     response_text = response_text.strip().removeprefix("```yaml").rstrip("`")
     try:
         data = yaml.safe_load(response_text)
@@ -37,7 +35,7 @@ def load_yaml(response_text: str, keys_fix_yaml: List[str] = None) -> dict:
     return data
 
 
-def try_fix_yaml(response_text: str, keys_fix_yaml: List[str] = None) -> dict:
+def try_fix_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
     """
     Attempt to fix YAML formatting issues in the given response text.
 
@@ -59,8 +57,6 @@ def try_fix_yaml(response_text: str, keys_fix_yaml: List[str] = None) -> dict:
     Example:
         try_fix_yaml(response_text, keys_fix_yaml=['key1', 'key2'])
     """
-    if keys_fix_yaml is None:
-        keys_fix_yaml = []
     response_text_lines = response_text.split("\n")
 
     # first fallback - try to convert 'relevant line: ...' to relevant line: |-\n        ...'

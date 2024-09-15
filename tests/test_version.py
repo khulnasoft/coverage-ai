@@ -6,9 +6,11 @@ from unittest.mock import mock_open, patch
 from coverage_ai.version import get_version
 
 # File location of version file is one directory up from this file's location. Use os.path to find this
+
 VERSION_FILE_LOCATION = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "coverage_ai/version.txt"
 )
+
 
 class TestGetVersion:
     @patch("builtins.open", new_callable=mock_open, read_data="1.2.3")

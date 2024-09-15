@@ -1,3 +1,4 @@
+import pytest
 import tempfile
 import textwrap
 from coverage_ai.FilePreprocessor import FilePreprocessor
@@ -5,8 +6,7 @@ from coverage_ai.FilePreprocessor import FilePreprocessor
 
 class TestFilePreprocessor:
     # Test for a C file
-    @staticmethod
-    def test_c_file():
+    def test_c_file(self):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".c") as tmp:
             preprocessor = FilePreprocessor(tmp.name)
             input_text = "Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit,\nsed do eiusmod tempor incididunt."
@@ -16,8 +16,7 @@ class TestFilePreprocessor:
             ), "C file processing should not alter the text."
 
     # Test for a Python file with only a function
-    @staticmethod
-    def test_py_file_with_function_only():
+    def test_py_file_with_function_only(self):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as tmp:
             tmp.write(b"def function():\n    pass\n")
             tmp.close()
@@ -29,8 +28,7 @@ class TestFilePreprocessor:
             ), "Python file without class should not alter the text."
 
     # Test for a Python file with a comment that looks like a class definition
-    @staticmethod
-    def test_py_file_with_commented_class():
+    def test_py_file_with_commented_class(self):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as tmp:
             tmp.write(b"# class myPythonFile:\n#    pass\n")
             tmp.close()
@@ -42,8 +40,7 @@ class TestFilePreprocessor:
             ), "Commented class definition should not trigger processing."
 
     # Test for a Python file with an actual class definition
-    @staticmethod
-    def test_py_file_with_class():
+    def test_py_file_with_class(self):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as tmp:
             tmp.write(b"class MyClass:\n    def method(self):\n        pass\n")
             tmp.close()
@@ -55,8 +52,7 @@ class TestFilePreprocessor:
                 processed_text == expected_output
             ), "Python file with class should indent the text."
 
-    @staticmethod
-    def test_py_file_with_syntax_error():
+    def test_py_file_with_syntax_error(self):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as tmp:
             tmp.write(b"def function(:\n    pass\n")  # Invalid syntax
             tmp.close()

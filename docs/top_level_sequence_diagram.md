@@ -10,6 +10,7 @@ sequenceDiagram
     participant CoverageProcessor
     participant AICaller
     participant PromptBuilder
+
     User->>CoverageAi: Initialize with args
     CoverageAi->>CustomLogger: Get logger instance
     CoverageAi->>CoverageAi: _validate_paths()
@@ -19,6 +20,7 @@ sequenceDiagram
     UnitTestGenerator->>CustomLogger: Get logger instance
     UnitTestGenerator->>CoverageProcessor: run_coverage()
     CoverageProcessor-->>UnitTestGenerator: Return coverage metrics
+
     CoverageAi->>UnitTestGenerator: initial_test_suite_analysis()
     
     loop Analyze test suite headers indentation
@@ -33,6 +35,7 @@ sequenceDiagram
         UnitTestGenerator->>UnitTestGenerator: Extract test_headers_indentation
         note right of UnitTestGenerator: Store test_headers_indentation
     end
+
     loop Analyze test insert lines
         UnitTestGenerator->>PromptBuilder: build_prompt_custom(analyze_suite_test_insert_line)
         PromptBuilder-->>UnitTestGenerator: Return prompt
@@ -47,6 +50,7 @@ sequenceDiagram
         UnitTestGenerator->>UnitTestGenerator: Extract relevant_line_number_to_insert_imports_after
         note right of UnitTestGenerator: Store relevant_line_numbers
     end
+
     loop Test generation and validation
         CoverageAi->>UnitTestGenerator: generate_tests()
         UnitTestGenerator->>PromptBuilder: build_prompt(test_generation_prompt)
@@ -56,9 +60,11 @@ sequenceDiagram
         UnitTestGenerator->>AICaller: Call model to generate tests
         note right of AICaller: Instructions: <br/>1. Analyze provided files <br/>2. Generate new tests <br/>3. Provide YAML object with new tests including: <br />a. Test behavior <br />b. Lines to cover <br />c. Test name <br />d. Test code <br />e. New imports <br />f. Test tags
         AICaller-->>UnitTestGenerator: Return generated tests
+
         UnitTestGenerator->>UnitTestGenerator: validate_test()
         note right of UnitTestGenerator: Append and run generated tests
         note right of UnitTestGenerator: Check test results
+
         alt Test failed
             UnitTestGenerator->>UnitTestGenerator: Rollback test file
             UnitTestGenerator->>UnitTestGenerator: Append failure details
@@ -70,6 +76,7 @@ sequenceDiagram
             CoverageProcessor-->>UnitTestGenerator: Return updated coverage metrics
         end
     end
+
     CoverageAi->>CustomLogger: Log final results
     note right of CoverageAi: Generate report
 ```
