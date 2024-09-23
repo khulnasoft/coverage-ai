@@ -1,4 +1,4 @@
-# Coverage AI
+# Coverage-AI
 
 [![GitHub license](https://img.shields.io/badge/License-AGPL_3.0-blue.svg)](https://github.com/khulnasoft/coverage-ai/blob/main/LICENSE)
 [![Discord](https://badgen.net/badge/icon/discord?icon=discord&label&color=purple)](https://discord.gg/cYsvFJJbdM)
