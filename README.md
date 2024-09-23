@@ -1,11 +1,5 @@
 # Coverage AI
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://www.khulnasoft.com/images/coverage-ai/coverage-ai-dark.png" width="330">
-  <source media="(prefers-color-scheme: light)" srcset="https://www.khulnasoft.com/images/coverage-ai/coverage-ai-light.png" width="330">
-  <img src="https://www.khulnasoft.com/images/coverage-ai/coverage-ai-light.png" alt="logo" width="330">
 
-</picture>
-<br/>
 KhulnaSoft Coverage Ai aims to help efficiently increasing code coverage, by automatically generating qualified tests to enhance existing test suites
 </div>
 
