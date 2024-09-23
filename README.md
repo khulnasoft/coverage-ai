@@ -1,8 +1,5 @@
 # Coverage AI
 
-KhulnaSoft Coverage Ai aims to help efficiently increasing code coverage, by automatically generating qualified tests to enhance existing test suites
-</div>
-
 [![GitHub license](https://img.shields.io/badge/License-AGPL_3.0-blue.svg)](https://github.com/khulnasoft/coverage-ai/blob/main/LICENSE)
 [![Discord](https://badgen.net/badge/icon/discord?icon=discord&label&color=purple)](https://discord.gg/cYsvFJJbdM)
 [![Twitter](https://img.shields.io/twitter/follow/khulnasoft)](https://twitter.com/khulnasoft)
@@ -10,6 +7,10 @@ KhulnaSoft Coverage Ai aims to help efficiently increasing code coverage, by aut
     <img alt="GitHub" src="https://img.shields.io/github/last-commit/khulnasoft/coverage-ai/main?style=for-the-badge" height="20">
     </a>
 </div>
+
+KhulnaSoft Coverage Ai aims to help efficiently increasing code coverage, by automatically generating qualified tests to enhance existing test suites
+</div>
+
 
 ## Table of Contents
 - [News and Updates](#news-and-updates)
