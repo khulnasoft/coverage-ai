@@ -1,7 +1,7 @@
 # Coverage-AI
 
 [![GitHub license](https://img.shields.io/badge/License-AGPL_3.0-blue.svg)](https://github.com/khulnasoft/coverage-ai/blob/main/LICENSE)
-[![Discord](https://badgen.net/badge/icon/discord?icon=discord&label&color=purple)](https://discord.gg/cYsvFJJbdM)
+[![Discord](https://badgen.net/badge/icon/discord?icon=discord&label&color=purple)](https://discord.gg/NfDj6xsR)
 [![Twitter](https://img.shields.io/twitter/follow/khulnasoft)](https://twitter.com/khulnasoft)
     <a href="https://github.com/khulnasoft/coverage-ai/commits/main">
     <img alt="GitHub" src="https://img.shields.io/github/last-commit/khulnasoft/coverage-ai/main?style=for-the-badge" height="20">
