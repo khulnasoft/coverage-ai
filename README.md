@@ -1,8 +1,4 @@
-<div align="center">
-
-<div align="center">
-
-
+# Coverage AI
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://www.khulnasoft.com/images/coverage-ai/coverage-ai-dark.png" width="330">
   <source media="(prefers-color-scheme: light)" srcset="https://www.khulnasoft.com/images/coverage-ai/coverage-ai-light.png" width="330">
