@@ -8,9 +8,6 @@
     </a>
 </div>
 
-KhulnaSoft Coverage Ai aims to help efficiently increasing code coverage, by automatically generating qualified tests to enhance existing test suites
-</div>
-
 
 ## Table of Contents
 - [News and Updates](#news-and-updates)
