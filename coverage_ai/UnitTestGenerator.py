@@ -1,18 +1,18 @@
+from wandb.sdk.data_types.trace_tree import Trace
 import datetime
+import json
 import logging
 import os
 import re
-import json
-from wandb.sdk.data_types.trace_tree import Trace
 
-from coverage_ai.Runner import Runner
+from coverage_ai.AICaller import AICaller
 from coverage_ai.CoverageProcessor import CoverageProcessor
 from coverage_ai.CustomLogger import CustomLogger
-from coverage_ai.PromptBuilder import PromptBuilder
-from coverage_ai.AICaller import AICaller
 from coverage_ai.FilePreprocessor import FilePreprocessor
-from coverage_ai.utils import load_yaml
+from coverage_ai.PromptBuilder import PromptBuilder
+from coverage_ai.Runner import Runner
 from coverage_ai.settings.config_loader import get_settings
+from coverage_ai.utils import load_yaml
 
 
 class UnitTestGenerator:
@@ -46,14 +46,17 @@ class UnitTestGenerator:
             coverage_type (str, optional): The type of coverage report. Defaults to "cobertura".
             desired_coverage (int, optional): The desired coverage percentage. Defaults to 90.
             additional_instructions (str, optional): Additional instructions for test generation. Defaults to an empty string.
-            use_report_coverage_feature_flag (bool, optional): Setting this to True considers the coverage of all the files in the coverage report.
-                                                               This means we consider a test as good if it increases coverage for a different
+            use_report_coverage_feature_flag (bool, optional): Setting this to True considers the coverage of all the files in the coverage report. 
+                                                               This means we consider a test as good if it increases coverage for a different 
                                                                file other than the source file. Defaults to False.
 
         Returns:
             None
         """
         # Class variables
+        self.relevant_line_number_to_insert_imports_after = None
+        self.relevant_line_number_to_insert_tests_after = None
+        self.test_headers_indentation = None
         self.source_file_path = source_file_path
         self.test_file_path = test_file_path
         self.code_coverage_report_path = code_coverage_report_path
@@ -79,7 +82,20 @@ class UnitTestGenerator:
         self.failed_test_runs = []
         self.total_input_token_count = 0
         self.total_output_token_count = 0
+        self.testing_framework = "Unknown"
+        self.code_coverage_report = ""
 
+        # Read self.source_file_path into a string
+        with open(self.source_file_path, "r") as f:
+            self.source_code = f.read()
+
+    def get_coverage_and_build_prompt(self):
+        """
+        Run code coverage and build the prompt to be used for generating tests.
+
+        Returns:
+            None
+        """
         # Run coverage and build the prompt
         self.run_coverage()
         self.prompt = self.build_prompt()
@@ -145,7 +161,7 @@ class UnitTestGenerator:
             file_path=self.code_coverage_report_path,
             src_file_path=self.source_file_path,
             coverage_type=self.coverage_type,
-            use_report_coverage_feature_flag=self.use_report_coverage_feature_flag,
+            use_report_coverage_feature_flag=self.use_report_coverage_feature_flag
         )
 
         # Use the process_coverage_report method of CoverageProcessor, passing in the time the test command was executed
@@ -170,14 +186,18 @@ class UnitTestGenerator:
                     if key == self.source_file_path:
                         self.last_source_file_coverage = percentage_covered
                     if key not in self.last_coverage_percentages:
-                        self.last_coverage_percentages[key] = 0
+                        self.last_coverage_percentages[key] =  0
                     self.last_coverage_percentages[key] = percentage_covered
-                percentage_covered = total_lines_covered / total_lines
+                try:
+                    percentage_covered = total_lines_covered / total_lines
+                except ZeroDivisionError:
+                    self.logger.error(f"ZeroDivisionError: Attempting to perform total_lines_covered / total_lines: {total_lines_covered} / {total_lines}.")
+                    percentage_covered = 0
 
                 self.logger.info(
                     f"Total lines covered: {total_lines_covered}, Total lines missed: {total_lines_missed}, Total lines: {total_lines}"
                 )
-                self.logger.info(
+                self.logger.info(    
                     f"coverage: Percentage {round(percentage_covered * 100, 2)}%"
                 )
             else:
@@ -235,7 +255,7 @@ class UnitTestGenerator:
             return out_str.strip()
         return ""
 
-    def build_prompt(self):
+    def build_prompt(self) -> dict:
         """
         Builds a prompt using the provided information to be used for generating tests.
 
@@ -258,10 +278,7 @@ class UnitTestGenerator:
                         continue
                     # dump dict to str
                     code = json.dumps(failed_test_dict)
-                    if "error_message" in failed_test:
-                        error_message = failed_test["error_message"]
-                    else:
-                        error_message = None
+                    error_message = failed_test.get("error_message", None)
                     failed_test_runs_value += f"Failed Test:\n```\n{code}\n```\n"
                     if error_message:
                         failed_test_runs_value += (
@@ -285,6 +302,7 @@ class UnitTestGenerator:
             additional_instructions=self.additional_instructions,
             failed_test_runs=failed_test_runs_value,
             language=self.language,
+            testing_framework=self.testing_framework,
         )
 
         return self.prompt_builder.build_prompt()
@@ -318,6 +336,7 @@ class UnitTestGenerator:
                 response, prompt_token_count, response_token_count = (
                     self.ai_caller.call_model(prompt=prompt_headers_indentation)
                 )
+                self.ai_caller.model = self.llm_model
                 self.total_input_token_count += prompt_token_count
                 self.total_output_token_count += response_token_count
                 tests_dict = load_yaml(response)
@@ -343,6 +362,7 @@ class UnitTestGenerator:
                 response, prompt_token_count, response_token_count = (
                     self.ai_caller.call_model(prompt=prompt_test_insert_line)
                 )
+                self.ai_caller.model = self.llm_model
                 self.total_input_token_count += prompt_token_count
                 self.total_output_token_count += response_token_count
                 tests_dict = load_yaml(response)
@@ -352,6 +372,7 @@ class UnitTestGenerator:
                 relevant_line_number_to_insert_imports_after = tests_dict.get(
                     "relevant_line_number_to_insert_imports_after", None
                 )
+                self.testing_framework = tests_dict.get("testing_framework", "Unknown")
                 counter_attempts += 1
 
             if not relevant_line_number_to_insert_tests_after:
@@ -370,7 +391,7 @@ class UnitTestGenerator:
             self.logger.error(f"Error during initial test suite analysis: {e}")
             raise Exception("Error during initial test suite analysis")
 
-    def generate_tests(self, max_tokens=4096, dry_run=False):
+    def generate_tests(self):
         """
         Generate tests using the AI model based on the constructed prompt.
 
@@ -381,7 +402,6 @@ class UnitTestGenerator:
 
         Parameters:
             max_tokens (int, optional): The maximum number of tokens to use for generating tests. Defaults to 4096.
-            dry_run (bool, optional): A flag indicating whether to perform a dry run without calling the AI model. Defaults to False.
 
         Returns:
             dict: A dictionary containing the generated tests with test tags, test code, test name, and test behavior. If an error occurs during test generation, an empty dictionary is returned.
@@ -390,15 +410,10 @@ class UnitTestGenerator:
             Exception: If there is an error during test generation, such as a parsing error while processing the AI model response.
         """
         self.prompt = self.build_prompt()
+        response, prompt_token_count, response_token_count =  self.ai_caller.call_model(prompt=self.prompt)
 
-        if dry_run:
-            response = "```def test_something():\n    pass```\n```def test_something_else():\n    pass```\n```def test_something_different():\n    pass```"
-        else:
-            response, prompt_token_count, response_token_count = (
-                self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
-            )
-            self.total_input_token_count += prompt_token_count
-            self.total_output_token_count += response_token_count
+        self.total_input_token_count += prompt_token_count
+        self.total_output_token_count += response_token_count
         try:
             tests_dict = load_yaml(
                 response,
@@ -486,7 +501,7 @@ class UnitTestGenerator:
                         [delta_indent * " " + line for line in test_code.split("\n")]
                     )
             test_code_indented = "\n" + test_code_indented.strip("\n") + "\n"
-
+            exit_code = 0
             if test_code_indented and relevant_line_number_to_insert_tests_after:
                 # Step 1: Insert the generated test to the relevant line in the test file
                 additional_imports_lines = ""
@@ -528,13 +543,12 @@ class UnitTestGenerator:
                     self.logger.info(
                         f'Running test with the following command: "{self.test_command}"'
                     )
-                    stdout, stderr, exit_code, time_of_test_command = (
-                        Runner.run_command(
-                            command=self.test_command, cwd=self.test_command_dir
-                        )
+                    stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
+                        command=self.test_command, cwd=self.test_command_dir
                     )
                     if exit_code != 0:
                         break
+                
 
                 # Step 3: Check for pass/fail from the Runner object
                 if exit_code != 0:
@@ -549,13 +563,16 @@ class UnitTestGenerator:
                         "stderr": stderr,
                         "stdout": stdout,
                         "test": generated_test,
+                        "language": self.language,
+                        "prompt": self.prompt["user"],
+                        "source_file": self.source_code,
                         "original_test_file": original_content,
                         "processed_test_file": processed_test,
                     }
 
-                    error_message = extract_error_message_python(fail_details["stdout"])
+                    error_message = self.extract_error_message(stderr=fail_details["stderr"], stdout=fail_details["stdout"])
                     if error_message:
-                        logging.error(f"Error message:\n{error_message}")
+                        logging.error(f"Error message summary:\n{error_message}")
 
                     self.failed_test_runs.append(
                         {"code": generated_test, "error_message": error_message}
@@ -589,10 +606,8 @@ class UnitTestGenerator:
                         self.logger.info(
                             "Using the report coverage feature flag to process the coverage report"
                         )
-                        file_coverage_dict = (
-                            new_coverage_processor.process_coverage_report(
-                                time_of_test_command=time_of_test_command
-                            )
+                        file_coverage_dict = new_coverage_processor.process_coverage_report(
+                            time_of_test_command=time_of_test_command
                         )
                         total_lines_covered = 0
                         total_lines_missed = 0
@@ -631,13 +646,16 @@ class UnitTestGenerator:
                             "stderr": stderr,
                             "stdout": stdout,
                             "test": generated_test,
+                            "language": self.language,
+                            "prompt": self.prompt["user"],
+                            "source_file": self.source_code,
                             "original_test_file": original_content,
                             "processed_test_file": processed_test,
                         }
                         self.failed_test_runs.append(
                             {
                                 "code": fail_details["test"],
-                                "error_message": "did not increase code coverage",
+                                "error_message": "Code coverage did not increase",
                             }
                         )  # Append failure details to the list
 
@@ -667,13 +685,16 @@ class UnitTestGenerator:
                         "stderr": stderr,
                         "stdout": stdout,
                         "test": generated_test,
+                        "language": self.language,
+                        "prompt": self.prompt["user"],
+                        "source_file": self.source_code,
                         "original_test_file": original_content,
                         "processed_test_file": processed_test,
                     }
                     self.failed_test_runs.append(
                         {
                             "code": fail_details["test"],
-                            "error_message": "coverage verification error",
+                            "error_message": "Coverage verification error",
                         }
                     )  # Append failure details to the list
                     return fail_details
@@ -689,16 +710,11 @@ class UnitTestGenerator:
                 for key in coverage_percentages:
                     if key not in self.last_coverage_percentages:
                         self.last_coverage_percentages[key] = 0
-                    if (
-                        coverage_percentages[key] > self.last_coverage_percentages[key]
-                        and key == self.source_file_path.split("/")[-1]
-                    ):
+                    if coverage_percentages[key] > self.last_coverage_percentages[key] and key == self.source_file_path.split("/")[-1]:
                         self.logger.info(
                             f"Coverage for provided source file: {key} increased from {round(self.last_coverage_percentages[key] * 100, 2)} to {round(coverage_percentages[key] * 100, 2)}"
                         )
-                    elif (
-                        coverage_percentages[key] > self.last_coverage_percentages[key]
-                    ):
+                    elif coverage_percentages[key] > self.last_coverage_percentages[key]:
                         self.logger.info(
                             f"Coverage for non-source file: {key} increased from {round(self.last_coverage_percentages[key] * 100, 2)} to {round(coverage_percentages[key] * 100, 2)}"
                         )
@@ -714,6 +730,9 @@ class UnitTestGenerator:
                     "stderr": stderr,
                     "stdout": stdout,
                     "test": generated_test,
+                    "language": self.language,
+                    "prompt": self.prompt["user"],
+                    "source_file": self.source_code,
                     "original_test_file": original_content,
                     "processed_test_file": processed_test,
                 }
@@ -726,6 +745,9 @@ class UnitTestGenerator:
                 "stderr": str(e),
                 "stdout": "",
                 "test": generated_test,
+                "language": self.language,
+                "prompt": self.prompt["user"],
+                "source_file": self.source_code,
                 "original_test_file": original_content,
                 "processed_test_file": "N/A",
             }
@@ -748,30 +770,46 @@ class UnitTestGenerator:
         return json.dumps(self.to_dict())
 
 
-def extract_error_message_python(fail_message):
-    """
-    Extracts and returns the error message from the provided failure message.
+    def extract_error_message(self, stderr, stdout):
+        """
+        Extracts the error message from the provided stderr and stdout outputs.
 
-    Parameters:
-        fail_message (str): The failure message containing the error message to be extracted.
+        Updates the PromptBuilder object with the stderr and stdout, builds a custom prompt for analyzing test run failures,
+        calls the language model to analyze the prompt, and loads the response into a dictionary.
+        
+        Returns the error summary from the loaded YAML data or a default error message if unable to summarize.
+        Logs errors encountered during the process.
 
-    Returns:
-        str: The extracted error message from the failure message, or an empty string if no error message is found.
+        Parameters:
+            stderr (str): The standard error output from the test run.
+            stdout (str): The standard output from the test run.
 
-    """
-    try:
-        # Define a regular expression pattern to match the error message
-        MAX_LINES = 20
-        pattern = r"={3,} FAILURES ={3,}(.*?)(={3,}|$)"
-        match = re.search(pattern, fail_message, re.DOTALL)
-        if match:
-            err_str = match.group(1).strip("\n")
-            err_str_lines = err_str.split("\n")
-            if len(err_str_lines) > MAX_LINES:
-                # show last MAX_lines lines
-                err_str = "...\n" + "\n".join(err_str_lines[-MAX_LINES:])
-            return err_str
-        return ""
-    except Exception as e:
-        logging.error(f"Error extracting error message: {e}")
-        return ""
+        Returns:
+            str: The error summary extracted from the response or a default error message if extraction fails.
+        """
+        try:
+            # Update the PromptBuilder object with stderr and stdout
+            self.prompt_builder.stderr_from_run = stderr
+            self.prompt_builder.stdout_from_run = stdout
+
+            # Build the prompt
+            prompt_headers_indentation = self.prompt_builder.build_prompt_custom(
+                file="analyze_test_run_failure"
+            )
+
+            # Run the analysis via LLM
+            response, prompt_token_count, response_token_count = (
+                self.ai_caller.call_model(prompt=prompt_headers_indentation, stream=False)
+            )
+            self.total_input_token_count += prompt_token_count
+            self.total_output_token_count += response_token_count
+            tests_dict = load_yaml(response)
+            if tests_dict.get("error_summary"):
+                output_str = tests_dict.get("error_summary")
+            else:
+                output_str = f"ERROR: Unable to summarize error message from inputs. STDERR: {stderr}\nSTDOUT: {stdout}."
+            return output_str
+        except Exception as e:
+            logging.error(f"ERROR: Unable to extract error message from inputs using LLM.\nSTDERR: {stderr}\nSTDOUT: {stdout}")
+            logging.error(f"Error extracting error message: {e}")
+            return ""

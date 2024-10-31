@@ -1,7 +1,7 @@
 import os
 
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 from coverage_ai.AICaller import AICaller
 
 
@@ -50,7 +50,8 @@ class TestAICaller:
         with pytest.raises(Exception) as exc_info:
             ai_caller.call_model(prompt)
 
-        assert str(exc_info.value) == "list index out of range"
+        # assert str(exc_info.value) == "list index out of range"
+        assert str(exc_info.value) == "'NoneType' object is not subscriptable" # this error message might change for different versions of litellm
 
     @patch("coverage_ai.AICaller.litellm.completion")
     @patch.dict(os.environ, {"WANDB_API_KEY": "test_key"})
@@ -112,3 +113,35 @@ class TestAICaller:
             str(exc_info.value)
             == "\"The prompt dictionary must contain 'system' and 'user' keys.\""
         )
+
+    @patch("coverage_ai.AICaller.litellm.completion")
+    def test_call_model_o1_preview(self, mock_completion, ai_caller):
+        ai_caller.model = "o1-preview"
+        prompt = {"system": "System message", "user": "Hello, world!"}
+        # Mock the response
+        mock_response = Mock()
+        mock_response.choices = [Mock(message=Mock(content="response"))]
+        mock_response.usage = Mock(prompt_tokens=2, completion_tokens=10)
+        mock_completion.return_value = mock_response
+        # Call the method
+        response, prompt_tokens, response_tokens = ai_caller.call_model(prompt, stream=False)
+        assert response == "response"
+        assert prompt_tokens == 2
+        assert response_tokens == 10
+
+    @patch("coverage_ai.AICaller.litellm.completion")
+    def test_call_model_streaming_response(self, mock_completion, ai_caller):
+        prompt = {"system": "", "user": "Hello, world!"}
+        # Mock the response to be an iterable of chunks
+        mock_chunk = Mock()
+        mock_chunk.choices = [Mock(delta=Mock(content="response part"))]
+        mock_completion.return_value = [mock_chunk]
+        with patch("coverage_ai.AICaller.litellm.stream_chunk_builder") as mock_builder:
+            mock_builder.return_value = {
+                "choices": [{"message": {"content": "response"}}],
+                "usage": {"prompt_tokens": 2, "completion_tokens": 10},
+            }
+            response, prompt_tokens, response_tokens = ai_caller.call_model(prompt, stream=True)
+            assert response == "response"
+            assert prompt_tokens == 2
+            assert response_tokens == 10

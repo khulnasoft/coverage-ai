@@ -2,7 +2,7 @@
 name = "coverage-ai"
 version = "0.0.0" # Placeholder. Will be replaced by dynamic versioning.
 description = "Coverage Ai Tool"
-authors = ["KhulnaSoft <info@khulnasoft.com>"]
+authors = ["QodoAI <tal.r@khulnasoft.com>"]
 license = "Apache 2.0"
 readme = "README.md"
 
@@ -19,14 +19,20 @@ poetry-dynamic-versioning = "^1.3.0"
 sqlalchemy = "^2.0.32"
 
 # LLM Dependencies
-litellm = { git = "https://github.com/mrT23/litellm.git" }
-openai = "^1.32.0"
-tiktoken = "^0.7.0"
+litellm = { git = "https://github.com/Codium-research/litellm_2024_10_29.git" }
+openai = "^1.52.1"
+tiktoken = "^0.8.0"
 boto3 = "^1.34.121"
 google-cloud-aiplatform = "^1.54.0"
 numpy = "^1.26.0"   # Note: Earlier version have incompatibility issues with google-cloud-aiplatform
 dynaconf = "^3.2.4"
 wandb = "^0.17.1"
+
+# LSP Dependencies
+grep_ast = "^0.3.3"
+tree_sitter = "^0.21.3"
+tree_sitter_languages = "^1.10.2"
+jedi-language-server = "^0.41.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
@@ -43,6 +49,7 @@ build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry.scripts]
 coverage-ai = "coverage_ai.main:main"
+generate-report = "coverage_ai.UnitTestDB:dump_to_report_cli"
 
 [tool.poetry-dynamic-versioning]
 enable = true
