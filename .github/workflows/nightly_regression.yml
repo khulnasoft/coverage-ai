@@ -12,9 +12,9 @@ jobs:
   build-executable:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.12'
     
@@ -54,7 +54,7 @@ jobs:
     steps:
     # Step 1: Check out the repository code
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     # Step 2: Download the artifact
     - name: Download artifact
