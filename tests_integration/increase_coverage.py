@@ -9,17 +9,19 @@ from coverage_ai.CoverageAi import CoverageAi
 # List of source/test files to iterate over:
 SOURCE_TEST_FILE_LIST = [
     # ["coverage_ai/AICaller.py", "tests/test_AICaller.py"],
-    ["coverage_ai/CoverageAi.py", "tests/test_CoverageAi.py"],
+    # ["coverage_ai/CoverageAi.py", "tests/test_CoverageAi.py"],
     # ["coverage_ai/CoverageProcessor.py", "tests/test_CoverageProcessor.py"],
+    # ["coverage_ai/CustomLogger.py", ""],
     # ["coverage_ai/FilePreprocessor.py", "tests/test_FilePreprocessor.py"],
     # ["coverage_ai/PromptBuilder.py", "tests/test_PromptBuilder.py"],
     # ["coverage_ai/ReportGenerator.py", "tests/test_ReportGenerator.py"],
     # ["coverage_ai/Runner.py", "tests/test_Runner.py"],
+    # ["coverage_ai/UnitTestDB.py", "tests/test_UnitTestDB.py"],
     # ["coverage_ai/UnitTestGenerator.py", "tests/test_UnitTestGenerator.py"],
+    # ["coverage_ai/main.py", "tests/test_main.py"],
+    # ["coverage_ai/settings/config_loader.py", ""],
+    ["coverage_ai/utils.py", "tests/test_load_yaml.py"],
     # ["coverage_ai/version.py", "tests/test_version.py"],
-    # ["coverage_ai/utils.py", "tests/test_load_yaml.py"],
-    # ["coverage_ai/settings/config_loader.py", "tests/test_.py"],
-    # ["coverage_ai/CustomLogger.py",             ""],
 ]
 
 
@@ -29,18 +31,22 @@ class Args:
         self.test_file_path = test_file_path
         self.test_file_output_path = ""
         self.code_coverage_report_path = "coverage.xml"
-        self.test_command = f"poetry run pytest --cov=coverage_ai --cov-report=xml --cov-report=term --log-cli-level=INFO --timeout=30"
+        self.test_command = f"poetry run pytest --cov=coverage_ai --cov-report=xml  --timeout=30 --disable-warnings"
         self.test_command_dir = os.getcwd()
         self.included_files = None
         self.coverage_type = "cobertura"
         self.report_filepath = "test_results.html"
         self.desired_coverage = 100
         self.max_iterations = 5
-        self.additional_instructions = "Use as much mocking as possible"
-        self.model = "gpt-4o"
+        self.additional_instructions = "Do not indent the tests"
+        # self.model = "gpt-4o"
+        self.model = "o1-mini"
         self.api_base = "http://localhost:11434"
         self.prompt_only = False
         self.strict_coverage = False
+        self.run_tests_multiple_times = 1
+        self.use_report_coverage_feature_flag=False
+        self.log_db_path="increase_project_coverage.db"
 
 
 if __name__ == "__main__":
