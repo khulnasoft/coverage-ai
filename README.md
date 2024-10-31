@@ -1,26 +1,13 @@
-<div align="center">
+# Coverage-AI
 
-<div align="center">
-
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://www.khulnasoft.com/images/coverage-ai/coverage-ai-dark.png" width="330">
-  <source media="(prefers-color-scheme: light)" srcset="https://www.khulnasoft.com/images/coverage-ai/coverage-ai-light.png" width="330">
-  <img src="https://www.khulnasoft.com/images/coverage-ai/coverage-ai-light.png" alt="logo" width="330">
-
-</picture>
-<br/>
-KhulnaSoft Coverage Ai aims to help efficiently increasing code coverage, by automatically generating qualified tests to enhance existing test suites
-</div>
-
-[![GitHub license](https://img.shields.io/badge/License-AGPL_3.0-blue.svg)](https://github.com/Khulnasoft/coverage-ai/blob/main/LICENSE)
-[![Discord](https://badgen.net/badge/icon/discord?icon=discord&label&color=purple)](https://discord.gg/cYsvFJJbdM)
+[![GitHub license](https://img.shields.io/badge/License-AGPL_3.0-blue.svg)](https://github.com/khulnasoft/coverage-ai/blob/main/LICENSE)
+[![Discord](https://badgen.net/badge/icon/discord?icon=discord&label&color=purple)](https://discord.gg/NfDj6xsR)
 [![Twitter](https://img.shields.io/twitter/follow/khulnasoft)](https://twitter.com/khulnasoft)
-    <a href="https://github.com/Khulnasoft/coverage-ai/commits/main">
-    <img alt="GitHub" src="https://img.shields.io/github/last-commit/Khulnasoft/coverage-ai/main?style=for-the-badge" height="20">
-    </a><br>
-    <a href="https://trendshift.io/repositories/10328" target="_blank"><img src="https://trendshift.io/api/badge/repositories/10328" alt="Khulnasoft/coverage-ai | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+    <a href="https://github.com/khulnasoft/coverage-ai/commits/main">
+    <img alt="GitHub" src="https://img.shields.io/github/last-commit/khulnasoft/coverage-ai/main?style=for-the-badge" height="20">
+    </a>
 </div>
+
 
 ## Table of Contents
 - [News and Updates](#news-and-updates)
@@ -31,26 +18,6 @@ KhulnaSoft Coverage Ai aims to help efficiently increasing code coverage, by aut
 
 
 ## News and Updates
-
-### 2024-09-29:
-We are excited to announce the latest series of updates to CoverageAi, delivering significant improvements to functionality, documentation, and testing frameworks. These updates reflect our ongoing commitment to enhancing the developer experience, improving error handling, and refining the testing processes.
-
-#### New Features and Enhancements
-* Enhanced Database Usage: Introduced a new database_usage.md document outlining the expanded capabilities of logging test results to a structured database.
-* Comprehensive System Diagrams: Added a top_level_sequence_diagram.md, providing a clear visual overview of CoverageAi's processes and workflows.
-* Docker and Multi-Language Support: Several new Docker configurations and templated tests were introduced for various programming languages, including C#, TypeScript, C, and React, ensuring streamlined testing environments across multiple platforms.
-* UnitTestDB Integration: The UnitTestDB.py file was added to support robust logging of test generation attempts, improving error tracking and debugging.
-
-#### Refinements and Modifications
-* Coverage Processing: Key improvements to CoverageProcessor.py modularized coverage parsing and expanded support for different coverage report formats (LCOV, Cobertura, Jacoco).
-* PromptBuilder Enhancements: New CLI arguments were introduced, including options for running tests multiple times (--run-tests-multiple-times) and a report coverage feature flag for more granular control over coverage behavior.
-* CI/CD Pipeline Improvements: Several GitHub workflows were modified to improve pipeline efficiency, including nightly regression tests and templated test publishing pipelines.
-
-#### Improved Documentation
-* Detailed Usage Examples: The usage_examples.md file was updated to provide more comprehensive guidance on how to effectively use CoverageAi's features, ensuring that developers can quickly get up to speed with the latest updates.
-* Configuration and Template Updates: Configuration files, such as test_generation_prompt.toml, were refined to better support the test framework and eliminate redundant instructions.
-
-These updates signify a major leap forward in improving the ease of use, flexibility, and overall performance of CoverageAi. We are committed to continuing to enhance the tool and providing regular updates based on feedback from our community.
 
 ### 2024-06-05:
 The logic and prompts for adding new imports for the generated tests have been improved.
@@ -100,12 +67,12 @@ The Coverage Ai can be installed as a Python Pip package or run as a standalone 
 
 #### Python Pip
 To install the Python Pip package directly via GitHub run the following command:
-```shell
-pip install git+https://github.com/Khulnasoft/coverage-ai.git
+```
+pip install git+https://github.com/khulnasoft/coverage-ai.git
 ```
 
 #### Binary
-The binary can be run without any Python environment installed on your system (e.g. within a Docker container that does not contain Python). You can download the release for your system by navigating to the project's [release page](https://github.com/Khulnasoft/coverage-ai/releases).
+The binary can be run without any Python environment installed on your system (e.g. within a Docker container that does not contain Python). You can download the release for your system by navigating to the project's [release page](https://github.com/khulnasoft/coverage-ai/releases).
 
 ### Repository Setup
 Run the following command to install all the dependencies and run the project from source:
@@ -235,38 +202,10 @@ Set up your development environment by running the `poetry install` command as y
 Note: for older versions of Poetry you may need to include the `--dev` option to install Dev dependencies.
 
 After setting up your environment run the following command:
-```shell
+```
 poetry run pytest --junitxml=testLog.xml --cov=templated_tests --cov=coverage_ai --cov-report=xml --cov-report=term --log-cli-level=INFO
 ```
 This will also generate all logs and output reports that are generated in `.github/workflows/ci_pipeline.yml`.
-
-### Running the app locally from source
-
-#### Prerequisites
-- Python3
-- Poetry
-
-#### Steps
-1. If not already done, install the dependencies
-    ```shell
-    poetry install
-    ```
-
-2. Let Poetry manage / create the environment
-    ```shell
-   poetry shell
-   ```
-
-3. Run the app
-    ```shell
-   poetry run coverage-ai \
-     --source-file-path <path_to_source_file> \
-     [other_options...]
-    ```
-
-Notice that you're prepending `poetry run` to your `coverage-ai` command. Replace `<path_to_your_source_file>` with the
-actual path to your source file. Add any other necessary options as described in
-the [Running the Code](#running-the-code) section.
 
 ### Building the binary locally
 You can build the binary locally simply by invoking the `make installer` command. This will run PyInstaller locally on your machine. Ensure that you have set up the poetry project first (i.e. running `poetry install`).
