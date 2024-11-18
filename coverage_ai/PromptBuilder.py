@@ -3,14 +3,16 @@ import os
 
 from jinja2 import Environment, StrictUndefined
 
+from coverage_ai.AICaller import AICaller
 from coverage_ai.settings.config_loader import get_settings
+from coverage_ai.utils import load_yaml
 
 MAX_TESTS_PER_RUN = 4
 
 # Markdown text used as conditional appends
 ADDITIONAL_INCLUDES_TEXT = """
 ## Additional Includes
-The following is a set of included files used as context for the source code above. This is usually included libraries needed as context to write better tests:
+Here are the additional files needed to provide context for the source code:
 ======
 {included_files}
 ======
@@ -43,6 +45,7 @@ class PromptBuilder:
         failed_test_runs: str = "",
         language: str = "python",
         testing_framework: str = "NOT KNOWN",
+        project_root: str = "",
     ):
         """
         The `PromptBuilder` class is responsible for building a formatted prompt string by replacing placeholders with the actual content of files read during initialization. It takes in various paths and settings as parameters and provides a method to generate the prompt.
@@ -67,8 +70,11 @@ class PromptBuilder:
             build_prompt(self)
                 Replaces placeholders with the actual content of files read during initialization and returns the formatted prompt string.
         """
-        self.source_file_name = os.path.basename(source_file_path)
-        self.test_file_name = os.path.basename(test_file_path)
+        self.project_root = project_root
+        self.source_file_path = source_file_path
+        self.test_file_path = test_file_path
+        self.source_file_name_rel = os.path.relpath(source_file_path, project_root)
+        self.test_file_name_rel = os.path.relpath(test_file_path, project_root)
         self.source_file = self._read_file(source_file_path)
         self.test_file = self._read_file(test_file_path)
         self.code_coverage_report = code_coverage_report
@@ -123,8 +129,8 @@ class PromptBuilder:
 
     def build_prompt(self) -> dict:
         variables = {
-            "source_file_name": self.source_file_name,
-            "test_file_name": self.test_file_name,
+            "source_file_name": self.source_file_name_rel,
+            "test_file_name": self.test_file_name_rel,
             "source_file_numbered": self.source_file_numbered,
             "test_file_numbered": self.test_file_numbered,
             "source_file": self.source_file,
@@ -165,8 +171,8 @@ class PromptBuilder:
             dict: A dictionary containing the system and user prompts.
         """
         variables = {
-            "source_file_name": self.source_file_name,
-            "test_file_name": self.test_file_name,
+            "source_file_name": self.source_file_name_rel,
+            "test_file_name": self.test_file_name_rel,
             "source_file_numbered": self.source_file_numbered,
             "test_file_numbered": self.test_file_numbered,
             "source_file": self.source_file,
@@ -196,3 +202,26 @@ class PromptBuilder:
             return {"system": "", "user": ""}
 
         return {"system": system_prompt, "user": user_prompt}
+
+
+def adapt_test_command_for_a_single_test_via_ai(args, test_file_relative_path, test_command):
+    try:
+        variables = {"project_root_dir": args.test_command_dir,
+                     "test_file_relative_path": test_file_relative_path,
+                     "test_command": test_command,
+                     }
+        ai_caller = AICaller(model=args.model)
+        environment = Environment(undefined=StrictUndefined)
+        system_prompt = environment.from_string(get_settings().adapt_test_command_for_a_single_test_via_ai.system).render(
+            variables)
+        user_prompt = environment.from_string(get_settings().adapt_test_command_for_a_single_test_via_ai.user).render(
+            variables)
+        response, prompt_token_count, response_token_count = (
+            ai_caller.call_model(prompt={"system": system_prompt, "user": user_prompt}, stream=False)
+        )
+        response_yaml = load_yaml(response)
+        new_command_line = response_yaml["new_command_line"].strip()
+        return new_command_line
+    except Exception as e:
+        logging.error(f"Error adapting test command: {e}")
+        return None

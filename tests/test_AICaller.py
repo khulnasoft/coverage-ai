@@ -8,7 +8,7 @@ from coverage_ai.AICaller import AICaller
 class TestAICaller:
     @pytest.fixture
     def ai_caller(self):
-        return AICaller("test-model", "test-api")
+        return AICaller("test-model", "test-api", enable_retry=False)
 
     @patch("coverage_ai.AICaller.AICaller.call_model")
     def test_call_model_simplified(self, mock_call_model):
@@ -16,7 +16,7 @@ class TestAICaller:
         mock_call_model.return_value = ("Hello world!", 2, 10)
         prompt = {"system": "", "user": "Hello, world!"}
 
-        ai_caller = AICaller("test-model", "test-api")
+        ai_caller = AICaller("test-model", "test-api", enable_retry=False)
         # Explicitly provide the default value of max_tokens
         response, prompt_tokens, response_tokens = ai_caller.call_model(
             prompt, max_tokens=4096
@@ -144,4 +144,24 @@ class TestAICaller:
             response, prompt_tokens, response_tokens = ai_caller.call_model(prompt, stream=True)
             assert response == "response"
             assert prompt_tokens == 2
-            assert response_tokens == 10
+
+    @patch("coverage_ai.AICaller.litellm.completion")
+    @patch.dict(os.environ, {"WANDB_API_KEY": "test_key"})
+    @patch("coverage_ai.AICaller.Trace.log")
+    def test_call_model_wandb_logging_exception(self, mock_log, mock_completion, ai_caller):
+        mock_completion.return_value = [
+            {"choices": [{"delta": {"content": "response"}}]}
+        ]
+        mock_log.side_effect = Exception("Logging error")
+        prompt = {"system": "", "user": "Hello, world!"}
+        with patch("coverage_ai.AICaller.litellm.stream_chunk_builder") as mock_builder:
+            mock_builder.return_value = {
+                "choices": [{"message": {"content": "response"}}],
+                "usage": {"prompt_tokens": 2, "completion_tokens": 10},
+            }
+            with patch("builtins.print") as mock_print:
+                response, prompt_tokens, response_tokens = ai_caller.call_model(prompt)
+                assert response == "response"
+                assert prompt_tokens == 2
+                assert response_tokens == 10
+                mock_print.assert_any_call("Error logging to W&B: Logging error")
