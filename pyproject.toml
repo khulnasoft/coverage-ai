@@ -2,7 +2,7 @@
 name = "coverage-ai"
 version = "0.0.0" # Placeholder. Will be replaced by dynamic versioning.
 description = "Coverage Ai Tool"
-authors = ["QodoAI <tal.r@khulnasoft.com>"]
+authors = ["KhulnaSoft <info@khulnasoft.com>"]
 license = "Apache 2.0"
 readme = "README.md"
 
@@ -17,6 +17,8 @@ jinja2 = "^3.1.3"
 beautifulsoup4 = "^4.12.3"
 poetry-dynamic-versioning = "^1.3.0"
 sqlalchemy = "^2.0.32"
+diff-cover = "^9.1.1"
+tenacity = "^9.0.0"
 
 # LLM Dependencies
 litellm = { git = "https://github.com/Codium-research/litellm_2024_10_29.git" }
@@ -49,6 +51,7 @@ build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry.scripts]
 coverage-ai = "coverage_ai.main:main"
+coverage-ai-full-repo = "coverage_ai.main_full_repo:main"
 generate-report = "coverage_ai.UnitTestDB:dump_to_report_cli"
 
 [tool.poetry-dynamic-versioning]

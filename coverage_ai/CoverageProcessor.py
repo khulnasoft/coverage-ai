@@ -1,6 +1,7 @@
 from coverage_ai.CustomLogger import CustomLogger
-from typing import Literal, Tuple, Union
+from typing import Literal, Tuple, Union, List
 import csv
+import json
 import os
 import re
 import xml.etree.ElementTree as ET
@@ -13,6 +14,7 @@ class CoverageProcessor:
         src_file_path: str,
         coverage_type: Literal["cobertura", "lcov", "jacoco"],
         use_report_coverage_feature_flag: bool = False,
+        diff_coverage_report_path: str = None,
     ):
         """
         Initializes a CoverageProcessor object.
@@ -36,6 +38,7 @@ class CoverageProcessor:
         self.coverage_type = coverage_type
         self.logger = CustomLogger.get_logger(__name__)
         self.use_report_coverage_feature_flag = use_report_coverage_feature_flag
+        self.diff_coverage_report_path = diff_coverage_report_path
 
     def process_coverage_report(
         self, time_of_test_command: int
@@ -99,6 +102,8 @@ class CoverageProcessor:
                     return self.parse_coverage_report_lcov()
                 elif self.coverage_type == "jacoco":
                     return self.parse_coverage_report_jacoco()
+                elif self.coverage_type == "diff_cover_json":
+                    return self.parse_json_diff_coverage_report()
                 else:
                     raise ValueError(f"Unsupported coverage report type: {self.coverage_type}")
 
@@ -206,8 +211,18 @@ class CoverageProcessor:
         total coverage percentage is returned to be evaluated only.
         """
         lines_covered, lines_missed = [], []
+        source_file_extension = self.get_file_extension(self.src_file_path)
 
-        package_name, class_name = self.extract_package_and_class_java()
+        package_name, class_name = "",""
+        if source_file_extension == 'java':
+            package_name, class_name = self.extract_package_and_class_java()
+        elif source_file_extension == 'kt':
+            package_name, class_name = self.extract_package_and_class_kotlin()
+        else:
+            self.logger.warn(f"Unsupported Bytecode Language: {source_file_extension}. Using default Java logic.")
+            package_name, class_name = self.extract_package_and_class_java()
+
+
         file_extension = self.get_file_extension(self.file_path)
 
         missed, covered = 0, 0
@@ -233,7 +248,10 @@ class CoverageProcessor:
         """Parses a JaCoCo XML code coverage report to extract covered and missed line numbers for a specific file."""
         tree = ET.parse(self.file_path)
         root = tree.getroot()
-        sourcefile = root.find(f".//sourcefile[@name='{class_name}.java']")
+        sourcefile = (
+                root.find(f".//sourcefile[@name='{class_name}.java']") or
+                root.find(f".//sourcefile[@name='{class_name}.kt']")
+        )
 
         if sourcefile is None:
             return 0, 0
@@ -260,7 +278,7 @@ class CoverageProcessor:
                         covered = int(row["LINE_COVERED"])
                         break
                     except KeyError as e:
-                        self.logger.error("Missing expected column in CSV: {e}")
+                        self.logger.error(f"Missing expected column in CSV: {str(e)}")
                         raise
 
         return missed, covered
@@ -291,6 +309,78 @@ class CoverageProcessor:
             raise
 
         return package_name, class_name
+    def extract_package_and_class_kotlin(self):
+        package_pattern = re.compile(r"^\s*package\s+([\w.]+)\s*(?:;)?\s*(?://.*)?$")
+        class_pattern = re.compile(r"^\s*(?:public|internal|abstract|data|sealed|enum|open|final|private|protected)*\s*class\s+(\w+).*")
+
+        package_name = ""
+        class_name = ""
+        try:
+            with open(self.src_file_path, "r") as file:
+                for line in file:
+                    if not package_name:  # Only match package if not already found
+                        package_match = package_pattern.match(line)
+                        if package_match:
+                            package_name = package_match.group(1)
+
+                    if not class_name:  # Only match class if not already found
+                        class_match = class_pattern.match(line)
+                        if class_match:
+                            class_name = class_match.group(1)
+
+                    if package_name and class_name:  # Exit loop if both are found
+                        break
+        except (FileNotFoundError, IOError) as e:
+            self.logger.error(f"Error reading file {self.src_file_path}: {e}")
+            raise
+
+        return package_name, class_name
+
+    def parse_json_diff_coverage_report(self) -> Tuple[List[int], List[int], float]:
+        """
+        Parses a JSON-formatted diff coverage report to extract covered lines, missed lines,
+        and the coverage percentage for the specified src_file_path.
+        Returns:
+            Tuple[List[int], List[int], float]: A tuple containing lists of covered and missed lines,
+                                                and the coverage percentage.
+        """
+        with open(self.diff_coverage_report_path, "r") as file:
+            report_data = json.load(file)
+
+        # Create relative path components of `src_file_path` for matching
+        src_relative_path = os.path.relpath(self.src_file_path)
+        src_relative_components = src_relative_path.split(os.sep)
+
+        # Initialize variables for covered and missed lines
+        relevant_stats = None
+
+        for file_path, stats in report_data["src_stats"].items():
+            # Split the JSON's file path into components
+            file_path_components = file_path.split(os.sep)
+
+            # Match if the JSON path ends with the same components as `src_file_path`
+            if (
+                file_path_components[-len(src_relative_components) :]
+                == src_relative_components
+            ):
+                relevant_stats = stats
+                break
+
+        # If a match is found, extract the data
+        if relevant_stats:
+            covered_lines = relevant_stats["covered_lines"]
+            violation_lines = relevant_stats["violation_lines"]
+            coverage_percentage = (
+                relevant_stats["percent_covered"] / 100
+            )  # Convert to decimal
+        else:
+            # Default values if the file isn't found in the report
+            covered_lines = []
+            violation_lines = []
+            coverage_percentage = 0.0
+
+        return covered_lines, violation_lines, coverage_percentage
+
 
     def get_file_extension(self, filename: str) -> str | None:
         """Get the file extension from a given filename."""

@@ -19,11 +19,13 @@ build:
 installer:
 	poetry run pyinstaller \
 		--add-data "coverage_ai/version.txt:." \
-		--add-data "coverage_ai/settings/language_extensions.toml:." \
-		--add-data "coverage_ai/settings/test_generation_prompt.toml:." \
 		--add-data "coverage_ai/settings/analyze_suite_test_headers_indentation.toml:." \
 		--add-data "coverage_ai/settings/analyze_suite_test_insert_line.toml:." \
+		--add-data "coverage_ai/settings/analyze_test_against_context.toml:." \
 		--add-data "coverage_ai/settings/analyze_test_run_failure.toml:." \
+		--add-data "coverage_ai/settings/configuration.toml:." \
+		--add-data "coverage_ai/settings/language_extensions.toml:." \
+		--add-data "coverage_ai/settings/test_generation_prompt.toml:." \
 		--add-data "$(SITE_PACKAGES)/vendor:wandb/vendor" \
 		--hidden-import=tiktoken_ext.openai_public \
 		--hidden-import=tiktoken_ext \
