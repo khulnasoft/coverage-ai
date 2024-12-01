@@ -4,6 +4,8 @@ import shutil
 import sys
 import wandb
 
+from typing import List
+
 from coverage_ai.CustomLogger import CustomLogger
 from coverage_ai.PromptBuilder import adapt_test_command_for_a_single_test_via_ai
 from coverage_ai.ReportGenerator import ReportGenerator
@@ -62,6 +64,7 @@ class CoverageAi:
             use_report_coverage_feature_flag=args.use_report_coverage_feature_flag,
             diff_coverage=args.diff_coverage,
             comparison_branch=args.branch,
+            num_attempts=args.run_tests_multiple_times
         )
 
     def parse_command_to_run_only_a_single_test(self, args):
@@ -130,26 +133,14 @@ class CoverageAi:
             # Otherwise, set the test file output path to the current test file
             self.args.test_file_output_path = self.args.test_file_path
 
-    def run(self):
+    def init(self):
         """
-        Run the test generation process.
-
-        This method performs the following steps:
+        Prepare for test generation process
 
         1. Initialize the Weights & Biases run if the WANDS_API_KEY environment variable is set.
         2. Initialize variables to track progress.
         3. Run the initial test suite analysis.
-        4. Loop until desired coverage is reached or maximum iterations are met.
-        5. Generate new tests.
-        6. Loop through each new test and validate it.
-        7. Insert the test result into the database.
-        8. Increment the iteration count.
-        9. Check if the desired coverage has been reached.
-        10. If the desired coverage has been reached, log the final coverage.
-        11. If the maximum iteration limit is reached, log a failure message if strict coverage is specified.
-        12. Provide metrics on total token usage.
-        13. Generate a report.
-        14. Finish the Weights & Biases run if it was initialized.
+        
         """
         # Check if user has exported the WANDS_API_KEY environment variable
         if "WANDB_API_KEY" in os.environ:
@@ -159,30 +150,38 @@ class CoverageAi:
             run_name = f"{self.args.model}_" + time_and_date
             wandb.init(project="coverage-ai", name=run_name)
 
-        # Initialize variables to track progress
-        iteration_count = 0
-        test_results_list = []
-
         # Run initial test suite analysis
         self.test_validator.initial_test_suite_analysis()
         failed_test_runs, language, test_framework, coverage_report = self.test_validator.get_coverage()
         self.test_gen.build_prompt(failed_test_runs, language, test_framework, coverage_report)
 
+        return failed_test_runs, language, test_framework, coverage_report
+
+    def run_test_gen(self, failed_test_runs: List, language: str, test_framework: str, coverage_report: str):
+        """
+        Run the test generation process.
+
+        This method performs the following steps:
+
+        1. Loop until desired coverage is reached or maximum iterations are met.
+        2. Generate new tests.
+        3. Loop through each new test and validate it.
+        4. Insert the test result into the database.
+        5. Increment the iteration count.
+        6. Check if the desired coverage has been reached.
+        7. If the desired coverage has been reached, log the final coverage.
+        8. If the maximum iteration limit is reached, log a failure message if strict coverage is specified.
+        9. Provide metrics on total token usage.
+        10. Generate a report.
+        11. Finish the Weights & Biases run if it was initialized.
+        """
+        # Initialize variables to track progress
+        iteration_count = 0
+
         # Loop until desired coverage is reached or maximum iterations are met
-        while (
-            self.test_validator.current_coverage < (self.test_validator.desired_coverage / 100)
-            and iteration_count < self.args.max_iterations
-        ):
+        while iteration_count < self.args.max_iterations:
             # Log the current coverage
-            if self.args.diff_coverage:
-                self.logger.info(
-                    f"Current Diff Coverage: {round(self.test_validator.current_coverage * 100, 2)}%"
-                )
-            else:
-                self.logger.info(
-                    f"Current Coverage: {round(self.test_validator.current_coverage * 100, 2)}%"
-                )
-            self.logger.info(f"Desired Coverage: {self.test_validator.desired_coverage}%")
+            self.log_coverage()
 
             # Generate new tests
             generated_tests_dict = self.test_gen.generate_tests(failed_test_runs, language, test_framework, coverage_report)
@@ -190,22 +189,19 @@ class CoverageAi:
             # Loop through each new test and validate it
             for generated_test in generated_tests_dict.get("new_tests", []):
                 # Validate the test and record the result
-                test_result = self.test_validator.validate_test(
-                    generated_test, self.args.run_tests_multiple_times
-                )
-                test_result["prompt"] = self.test_gen.prompt["user"] # get the prompt used to generate the test so that it is stored in the database
-                test_results_list.append(test_result)
+                test_result = self.test_validator.validate_test(generated_test)
 
                 # Insert the test result into the database
+                test_result["prompt"] = self.test_gen.prompt["user"]
                 self.test_db.insert_attempt(test_result)
 
             # Increment the iteration count
             iteration_count += 1
 
             # Check if the desired coverage has been reached
-            if self.test_validator.current_coverage < (self.test_validator.desired_coverage / 100):
-                # Run the coverage tool again if the desired coverage hasn't been reached
-                self.test_validator.run_coverage()
+            failed_test_runs, language, test_framework, coverage_report = self.test_validator.get_coverage()
+            if self.test_validator.current_coverage >= (self.test_validator.desired_coverage / 100):
+                break
 
         # Log the final coverage
         if self.test_validator.current_coverage >= (self.test_validator.desired_coverage / 100):
@@ -233,9 +229,23 @@ class CoverageAi:
         )
 
         # Generate a report
-        # ReportGenerator.generate_report(test_results_list, self.args.report_filepath)
         self.test_db.dump_to_report(self.args.report_filepath)
 
         # Finish the Weights & Biases run if it was initialized
         if "WANDB_API_KEY" in os.environ:
             wandb.finish()
+
+    def log_coverage(self):
+        if self.args.diff_coverage:
+            self.logger.info(
+                f"Current Diff Coverage: {round(self.test_validator.current_coverage * 100, 2)}%"
+            )
+        else:
+            self.logger.info(
+                f"Current Coverage: {round(self.test_validator.current_coverage * 100, 2)}%"
+            )
+        self.logger.info(f"Desired Coverage: {self.test_validator.desired_coverage}%")
+
+    def run(self):
+        failed_test_runs, language, test_framework, coverage_report = self.init()
+        self.run_test_gen(failed_test_runs, language, test_framework, coverage_report)
