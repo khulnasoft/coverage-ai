@@ -218,6 +218,10 @@ class CoverageProcessor:
             package_name, class_name = self.extract_package_and_class_java()
         elif source_file_extension == 'kt':
             package_name, class_name = self.extract_package_and_class_kotlin()
+        elif source_file_extension == 'groovy':
+            package_name, class_name = self.extract_package_and_class_groovy()
+        elif source_file_extension == 'scala':
+            package_name, class_name = self.extract_package_and_class_scala()
         else:
             self.logger.warn(f"Unsupported Bytecode Language: {source_file_extension}. Using default Java logic.")
             package_name, class_name = self.extract_package_and_class_java()
@@ -312,6 +316,60 @@ class CoverageProcessor:
     def extract_package_and_class_kotlin(self):
         package_pattern = re.compile(r"^\s*package\s+([\w.]+)\s*(?:;)?\s*(?://.*)?$")
         class_pattern = re.compile(r"^\s*(?:public|internal|abstract|data|sealed|enum|open|final|private|protected)*\s*class\s+(\w+).*")
+
+        package_name = ""
+        class_name = ""
+        try:
+            with open(self.src_file_path, "r") as file:
+                for line in file:
+                    if not package_name:  # Only match package if not already found
+                        package_match = package_pattern.match(line)
+                        if package_match:
+                            package_name = package_match.group(1)
+
+                    if not class_name:  # Only match class if not already found
+                        class_match = class_pattern.match(line)
+                        if class_match:
+                            class_name = class_match.group(1)
+
+                    if package_name and class_name:  # Exit loop if both are found
+                        break
+        except (FileNotFoundError, IOError) as e:
+            self.logger.error(f"Error reading file {self.src_file_path}: {e}")
+            raise
+
+        return package_name, class_name
+
+    def extract_package_and_class_groovy(self):
+        package_pattern = re.compile(r"^\s*package\s+([\w\.]+)\s*;.*$")
+        class_pattern = re.compile(r"^\s*class\s+(\w+).*")
+
+        package_name = ""
+        class_name = ""
+        try:
+            with open(self.src_file_path, "r") as file:
+                for line in file:
+                    if not package_name:  # Only match package if not already found
+                        package_match = package_pattern.match(line)
+                        if package_match:
+                            package_name = package_match.group(1)
+
+                    if not class_name:  # Only match class if not already found
+                        class_match = class_pattern.match(line)
+                        if class_match:
+                            class_name = class_match.group(1)
+
+                    if package_name and class_name:  # Exit loop if both are found
+                        break
+        except (FileNotFoundError, IOError) as e:
+            self.logger.error(f"Error reading file {self.src_file_path}: {e}")
+            raise
+
+        return package_name, class_name
+
+    def extract_package_and_class_scala(self):
+        package_pattern = re.compile(r"^\s*package\s+([\w\.]+)\s*.*$")
+        class_pattern = re.compile(r"^\s*class\s+(\w+).*")
 
         package_name = ""
         class_name = ""

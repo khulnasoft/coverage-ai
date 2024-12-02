@@ -80,7 +80,10 @@ class CoverageAi:
                 except ValueError:
                     print(f"Failed to adapt test command for running a single test: {test_command}")
             else:
-                new_command_line = adapt_test_command_for_a_single_test_via_ai(args, test_file_relative_path, test_command)
+                try:
+                    new_command_line = adapt_test_command_for_a_single_test_via_ai(args, test_file_relative_path, test_command)
+                except Exception as e:
+                    print(f"Error adapting test command: {e}")
         if new_command_line:
             args.test_command_original = test_command
             args.test_command = new_command_line
