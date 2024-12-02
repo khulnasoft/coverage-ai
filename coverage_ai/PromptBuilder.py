@@ -192,8 +192,10 @@ class PromptBuilder:
         environment = Environment(undefined=StrictUndefined)
         try:
             settings = get_settings().get(file)
-            if settings is None or not hasattr(settings, "system") or not hasattr(
-                settings, "user"
+            if (
+                settings is None
+                or not hasattr(settings, "system")
+                or not hasattr(settings, "user")
             ):
                 logging.error(f"Could not find settings for prompt file: {file}")
                 return {"system": "", "user": ""}
@@ -206,20 +208,25 @@ class PromptBuilder:
         return {"system": system_prompt, "user": user_prompt}
 
 
-def adapt_test_command_for_a_single_test_via_ai(args, test_file_relative_path, test_command):
+def adapt_test_command_for_a_single_test_via_ai(
+    args, test_file_relative_path, test_command
+):
     try:
-        variables = {"project_root_dir": args.test_command_dir,
-                     "test_file_relative_path": test_file_relative_path,
-                     "test_command": test_command,
-                     }
+        variables = {
+            "project_root_dir": args.test_command_dir,
+            "test_file_relative_path": test_file_relative_path,
+            "test_command": test_command,
+        }
         ai_caller = AICaller(model=args.model)
         environment = Environment(undefined=StrictUndefined)
-        system_prompt = environment.from_string(get_settings().adapt_test_command_for_a_single_test_via_ai.system).render(
-            variables)
-        user_prompt = environment.from_string(get_settings().adapt_test_command_for_a_single_test_via_ai.user).render(
-            variables)
-        response, prompt_token_count, response_token_count = (
-            ai_caller.call_model(prompt={"system": system_prompt, "user": user_prompt}, stream=False)
+        system_prompt = environment.from_string(
+            get_settings().adapt_test_command_for_a_single_test_via_ai.system
+        ).render(variables)
+        user_prompt = environment.from_string(
+            get_settings().adapt_test_command_for_a_single_test_via_ai.user
+        ).render(variables)
+        response, prompt_token_count, response_token_count = ai_caller.call_model(
+            prompt={"system": system_prompt, "user": user_prompt}, stream=False
         )
         response_yaml = load_yaml(response)
         new_command_line = response_yaml["new_command_line"].strip()

@@ -98,9 +98,7 @@ class TestMain:
     @patch("coverage_ai.main.CoverageAi")
     @patch("coverage_ai.main.parse_args")
     @patch("coverage_ai.main.os.path.isfile")
-    def test_main_calls_agent_run(
-        self, mock_isfile, mock_parse_args, mock_coverage_ai
-    ):
+    def test_main_calls_agent_run(self, mock_isfile, mock_parse_args, mock_coverage_ai):
         args = argparse.Namespace(
             source_file_path="test_source.py",
             test_file_path="test_file.py",
@@ -123,12 +121,14 @@ class TestMain:
         )
         mock_parse_args.return_value = args
         # Mock os.path.isfile to return True for both source and test file paths
-        mock_isfile.side_effect = lambda path: path in [args.source_file_path, args.test_file_path]
+        mock_isfile.side_effect = lambda path: path in [
+            args.source_file_path,
+            args.test_file_path,
+        ]
         mock_agent_instance = MagicMock()
         mock_coverage_ai.return_value = mock_agent_instance
-    
+
         main()
-    
+
         mock_coverage_ai.assert_called_once_with(args)
         mock_agent_instance.run.assert_called_once()
-

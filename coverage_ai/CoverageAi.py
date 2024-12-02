@@ -13,6 +13,7 @@ from coverage_ai.UnitTestGenerator import UnitTestGenerator
 from coverage_ai.UnitTestValidator import UnitTestValidator
 from coverage_ai.UnitTestDB import UnitTestDB
 
+
 class CoverageAi:
     def __init__(self, args):
         """
@@ -64,27 +65,37 @@ class CoverageAi:
             use_report_coverage_feature_flag=args.use_report_coverage_feature_flag,
             diff_coverage=args.diff_coverage,
             comparison_branch=args.branch,
-            num_attempts=args.run_tests_multiple_times
+            num_attempts=args.run_tests_multiple_times,
         )
 
     def parse_command_to_run_only_a_single_test(self, args):
         test_command = args.test_command
         new_command_line = None
-        if hasattr(args, 'run_each_test_separately') and args.run_each_test_separately:
-            test_file_relative_path = os.path.relpath(args.test_file_output_path, args.project_root)
-            if 'pytest' in test_command:  # coverage run -m pytest tests  --cov=/Users/talrid/Git/coverage-ai --cov-report=xml --cov-report=term --log-cli-level=INFO --timeout=30
+        if hasattr(args, "run_each_test_separately") and args.run_each_test_separately:
+            test_file_relative_path = os.path.relpath(
+                args.test_file_output_path, args.project_root
+            )
+            if (
+                "pytest" in test_command
+            ):  # coverage run -m pytest tests  --cov=/Users/talrid/Git/coverage-ai --cov-report=xml --cov-report=term --log-cli-level=INFO --timeout=30
                 try:
-                    ind1 = test_command.index('pytest')
-                    ind2 = test_command[ind1:].index('--')
+                    ind1 = test_command.index("pytest")
+                    ind2 = test_command[ind1:].index("--")
                     new_command_line = f"{test_command[:ind1]}pytest {test_file_relative_path} {test_command[ind1 + ind2:]}"
                 except ValueError:
-                    print(f"Failed to adapt test command for running a single test: {test_command}")
+                    print(
+                        f"Failed to adapt test command for running a single test: {test_command}"
+                    )
             else:
-                new_command_line = adapt_test_command_for_a_single_test_via_ai(args, test_file_relative_path, test_command)
+                new_command_line = adapt_test_command_for_a_single_test_via_ai(
+                    args, test_file_relative_path, test_command
+                )
         if new_command_line:
             args.test_command_original = test_command
             args.test_command = new_command_line
-            print(f"Converting test command: `{test_command}`\n to run only a single test: `{new_command_line}`")
+            print(
+                f"Converting test command: `{test_command}`\n to run only a single test: `{new_command_line}`"
+            )
 
     def _validate_paths(self):
         """
@@ -114,7 +125,9 @@ class CoverageAi:
         if not self.args.log_db_path:
             self.args.log_db_path = "coverage_ai_unit_test_runs.db"
         # Connect to the test DB
-        self.test_db = UnitTestDB(db_connection_string=f"sqlite:///{self.args.log_db_path}")
+        self.test_db = UnitTestDB(
+            db_connection_string=f"sqlite:///{self.args.log_db_path}"
+        )
 
     def _duplicate_test_file(self):
         """
@@ -140,7 +153,7 @@ class CoverageAi:
         1. Initialize the Weights & Biases run if the WANDS_API_KEY environment variable is set.
         2. Initialize variables to track progress.
         3. Run the initial test suite analysis.
-        
+
         """
         # Check if user has exported the WANDS_API_KEY environment variable
         if "WANDB_API_KEY" in os.environ:
@@ -152,12 +165,22 @@ class CoverageAi:
 
         # Run initial test suite analysis
         self.test_validator.initial_test_suite_analysis()
-        failed_test_runs, language, test_framework, coverage_report = self.test_validator.get_coverage()
-        self.test_gen.build_prompt(failed_test_runs, language, test_framework, coverage_report)
+        failed_test_runs, language, test_framework, coverage_report = (
+            self.test_validator.get_coverage()
+        )
+        self.test_gen.build_prompt(
+            failed_test_runs, language, test_framework, coverage_report
+        )
 
         return failed_test_runs, language, test_framework, coverage_report
 
-    def run_test_gen(self, failed_test_runs: List, language: str, test_framework: str, coverage_report: str):
+    def run_test_gen(
+        self,
+        failed_test_runs: List,
+        language: str,
+        test_framework: str,
+        coverage_report: str,
+    ):
         """
         Run the test generation process.
 
@@ -184,7 +207,9 @@ class CoverageAi:
             self.log_coverage()
 
             # Generate new tests
-            generated_tests_dict = self.test_gen.generate_tests(failed_test_runs, language, test_framework, coverage_report)
+            generated_tests_dict = self.test_gen.generate_tests(
+                failed_test_runs, language, test_framework, coverage_report
+            )
 
             # Loop through each new test and validate it
             for generated_test in generated_tests_dict.get("new_tests", []):
@@ -199,12 +224,18 @@ class CoverageAi:
             iteration_count += 1
 
             # Check if the desired coverage has been reached
-            failed_test_runs, language, test_framework, coverage_report = self.test_validator.get_coverage()
-            if self.test_validator.current_coverage >= (self.test_validator.desired_coverage / 100):
+            failed_test_runs, language, test_framework, coverage_report = (
+                self.test_validator.get_coverage()
+            )
+            if self.test_validator.current_coverage >= (
+                self.test_validator.desired_coverage / 100
+            ):
                 break
 
         # Log the final coverage
-        if self.test_validator.current_coverage >= (self.test_validator.desired_coverage / 100):
+        if self.test_validator.current_coverage >= (
+            self.test_validator.desired_coverage / 100
+        ):
             self.logger.info(
                 f"Reached above target coverage of {self.test_validator.desired_coverage}% (Current Coverage: {round(self.test_validator.current_coverage * 100, 2)}%) in {iteration_count} iterations."
             )

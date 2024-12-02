@@ -50,8 +50,8 @@ class UnitTestValidator:
             coverage_type (str, optional): The type of coverage report. Defaults to "cobertura".
             desired_coverage (int, optional): The desired coverage percentage. Defaults to 90.
             additional_instructions (str, optional): Additional instructions for test generation. Defaults to an empty string.
-            use_report_coverage_feature_flag (bool, optional): Setting this to True considers the coverage of all the files in the coverage report. 
-                                                               This means we consider a test as good if it increases coverage for a different 
+            use_report_coverage_feature_flag (bool, optional): Setting this to True considers the coverage of all the files in the coverage report.
+                                                               This means we consider a test as good if it increases coverage for a different
                                                                file other than the source file. Defaults to False.
 
         Returns:
@@ -89,8 +89,12 @@ class UnitTestValidator:
         if self.diff_coverage:
             self.coverage_type = "diff_cover_json"
             self.diff_coverage_report_name = "diff-cover-report.json"
-            self.diff_cover_report_path = f"{self.test_command_dir}/{self.diff_coverage_report_name}"
-            self.logger.info(f"Diff coverage enabled. Using coverage report: {self.diff_cover_report_path}")
+            self.diff_cover_report_path = (
+                f"{self.test_command_dir}/{self.diff_coverage_report_name}"
+            )
+            self.logger.info(
+                f"Diff coverage enabled. Using coverage report: {self.diff_cover_report_path}"
+            )
         else:
             self.diff_cover_report_path = ""
 
@@ -124,8 +128,13 @@ class UnitTestValidator:
         """
         # Run coverage and build the prompt
         self.run_coverage()
-        return self.failed_test_runs, self.language, self.testing_framework, self.code_coverage_report
-    
+        return (
+            self.failed_test_runs,
+            self.language,
+            self.testing_framework,
+            self.code_coverage_report,
+        )
+
     def get_code_language(self, source_file_path):
         """
         Get the programming language based on the file extension of the provided source file path.
@@ -180,7 +189,7 @@ class UnitTestValidator:
             code_coverage_report=self.code_coverage_report,
             included_files=self.included_files,
             additional_instructions=self.additional_instructions,
-            failed_test_runs="", # see if this can be None
+            failed_test_runs="",  # see if this can be None
             language=self.language,
             testing_framework=self.testing_framework,
             project_root=self.project_root,
@@ -203,7 +212,7 @@ class UnitTestValidator:
             None
         """
         try:
-            self._init_prompt_builder() # Initialize the prompt builder
+            self._init_prompt_builder()  # Initialize the prompt builder
 
             test_headers_indentation = None
             allowed_attempts = 3
@@ -303,7 +312,7 @@ class UnitTestValidator:
             self.logger.info(
                 f"Initial coverage: {round(self.current_coverage * 100, 2)}%"
             )
-            
+
         except AssertionError as error:
             # Handle the case where the coverage report does not exist or was not updated after the test command
             self.logger.error(f"Error in coverage processing: {error}")
@@ -454,12 +463,13 @@ class UnitTestValidator:
                     self.logger.info(
                         f'Running test with the following command: "{self.test_command}"'
                     )
-                    stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
-                        command=self.test_command, cwd=self.test_command_dir
+                    stdout, stderr, exit_code, time_of_test_command = (
+                        Runner.run_command(
+                            command=self.test_command, cwd=self.test_command_dir
+                        )
                     )
                     if exit_code != 0:
                         break
-                
 
                 # Step 3: Check for pass/fail from the Runner object
                 if exit_code != 0:
@@ -503,8 +513,8 @@ class UnitTestValidator:
 
                 # If test passed, check for coverage increase
                 try:
-                    new_percentage_covered, new_coverage_percentages = self.post_process_coverage_report(
-                        time_of_test_command
+                    new_percentage_covered, new_coverage_percentages = (
+                        self.post_process_coverage_report(time_of_test_command)
                     )
 
                     if new_percentage_covered <= self.current_coverage:
@@ -580,11 +590,18 @@ class UnitTestValidator:
                 )  # this is important, otherwise the next test will be inserted at the wrong line
 
                 for key in new_coverage_percentages:
-                    if new_coverage_percentages[key] > self.last_coverage_percentages[key] and key == self.source_file_path.split("/")[-1]:
+                    if (
+                        new_coverage_percentages[key]
+                        > self.last_coverage_percentages[key]
+                        and key == self.source_file_path.split("/")[-1]
+                    ):
                         self.logger.info(
                             f"Coverage for provided source file: {key} increased from {round(self.last_coverage_percentages[key] * 100, 2)} to {round(new_coverage_percentages[key] * 100, 2)}"
                         )
-                    elif new_coverage_percentages[key] > self.last_coverage_percentages[key]:
+                    elif (
+                        new_coverage_percentages[key]
+                        > self.last_coverage_percentages[key]
+                    ):
                         self.logger.info(
                             f"Coverage for non-source file: {key} increased from {round(self.last_coverage_percentages[key] * 100, 2)} to {round(new_coverage_percentages[key] * 100, 2)}"
                         )
@@ -638,14 +655,13 @@ class UnitTestValidator:
     def to_json(self):
         return json.dumps(self.to_dict())
 
-
     def extract_error_message(self, fail_details):
         """
         Extracts the error message from the provided stderr and stdout outputs.
 
         Updates the PromptBuilder object with the stderr and stdout, builds a custom prompt for analyzing test run failures,
         calls the language model to analyze the prompt, and loads the response into a dictionary.
-        
+
         Returns the error summary from the loaded YAML data or a default error message if unable to summarize.
         Logs errors encountered during the process.
 
@@ -660,7 +676,9 @@ class UnitTestValidator:
             # Update the PromptBuilder object with stderr and stdout
             self.prompt_builder.stderr_from_run = fail_details["stderr"]
             self.prompt_builder.stdout_from_run = fail_details["stdout"]
-            self.prompt_builder.processed_test_file = fail_details["processed_test_file"]
+            self.prompt_builder.processed_test_file = fail_details[
+                "processed_test_file"
+            ]
 
             # Build the prompt
             custom_prompt = self.prompt_builder.build_prompt_custom(
@@ -702,9 +720,9 @@ class UnitTestValidator:
             total_lines_missed = 0
             total_lines = 0
             for key in file_coverage_dict:
-                lines_covered, lines_missed, percentage_covered = (
-                    file_coverage_dict[key]
-                )
+                lines_covered, lines_missed, percentage_covered = file_coverage_dict[
+                    key
+                ]
                 total_lines_covered += len(lines_covered)
                 total_lines_missed += len(lines_missed)
                 total_lines += len(lines_covered) + len(lines_missed)
@@ -716,7 +734,9 @@ class UnitTestValidator:
             try:
                 percentage_covered = total_lines_covered / total_lines
             except ZeroDivisionError:
-                self.logger.error(f"ZeroDivisionError: Attempting to perform total_lines_covered / total_lines: {total_lines_covered} / {total_lines}.")
+                self.logger.error(
+                    f"ZeroDivisionError: Attempting to perform total_lines_covered / total_lines: {total_lines_covered} / {total_lines}."
+                )
                 percentage_covered = 0
 
             self.logger.info(
@@ -741,7 +761,6 @@ class UnitTestValidator:
             )
             self.code_coverage_report = f"Lines covered: {lines_covered}\nLines missed: {lines_missed}\nPercentage covered: {round(percentage_covered * 100, 2)}%"
         return percentage_covered, coverage_percentages
-
 
     def generate_diff_coverage_report(self):
         # Run the diff-cover command to generate a JSON diff coverage report
