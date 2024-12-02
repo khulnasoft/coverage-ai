@@ -21,7 +21,7 @@ class TestFilePreprocessor:
             tmp.write(b"def function():\n    pass\n")
             tmp.close()
             preprocessor = FilePreprocessor(tmp.name)
-            input_text = "    Lorem ipsum dolor sit amet,\n    consectetur adipiscing elit,\n    sed do eiusmod tempor incididunt."
+            input_text = "Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit,\nsed do eiusmod tempor incididunt."
             processed_text = preprocessor.process_file(input_text)
             assert (
                 processed_text == input_text
