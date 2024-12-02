@@ -308,12 +308,8 @@ class LanguageServerHandler:
         """
         try:
             await self._receive_payload(json.loads(body))
-        except IOError as ex:
+        except (IOError, UnicodeDecodeError, json.JSONDecodeError) as ex:
             self._log(f"malformed {ENCODING}: {ex}")
-        except UnicodeDecodeError as ex:
-            self._log(f"malformed {ENCODING}: {ex}")
-        except json.JSONDecodeError as ex:
-            self._log(f"malformed JSON: {ex}")
 
     async def _receive_payload(self, payload: StringDict) -> None:
         """
