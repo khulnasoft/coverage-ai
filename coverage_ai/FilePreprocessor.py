@@ -72,7 +72,7 @@ class FilePreprocessor:
                 content = file.read()
             parsed_ast = ast.parse(content)
             for node in ast.walk(parsed_ast):
-                if isinstance(node, ast.Import) or isinstance(node, ast.ImportFrom):
+                if isinstance(node, (ast.Import, ast.ImportFrom)):
                     return True
         except SyntaxError as e:
             print(f"Syntax error when parsing the file: {e}")
