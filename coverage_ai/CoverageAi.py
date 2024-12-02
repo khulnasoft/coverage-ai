@@ -201,6 +201,29 @@ class CoverageAi:
         # Initialize variables to track progress
         iteration_count = 0
 
+        return failed_test_runs, language, test_framework, coverage_report
+
+    def run_test_gen(self, failed_test_runs: List, language: str, test_framework: str, coverage_report: str):
+        """
+        Run the test generation process.
+
+        This method performs the following steps:
+
+        1. Loop until desired coverage is reached or maximum iterations are met.
+        2. Generate new tests.
+        3. Loop through each new test and validate it.
+        4. Insert the test result into the database.
+        5. Increment the iteration count.
+        6. Check if the desired coverage has been reached.
+        7. If the desired coverage has been reached, log the final coverage.
+        8. If the maximum iteration limit is reached, log a failure message if strict coverage is specified.
+        9. Provide metrics on total token usage.
+        10. Generate a report.
+        11. Finish the Weights & Biases run if it was initialized.
+        """
+        # Initialize variables to track progress
+        iteration_count = 0
+
         # Loop until desired coverage is reached or maximum iterations are met
         while iteration_count < self.args.max_iterations:
             # Log the current coverage

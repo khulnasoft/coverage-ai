@@ -425,7 +425,10 @@ class LanguageServer:
                     new_item["range"] = item[LSPConstants.TARGET_SELECTION_RANGE]
                     ret.append(multilspy_types.Location(**new_item))
                 else:
-                    assert False, f"Unexpected response from Language Server: {item}"
+                    self.logger.log(
+                        f"Unexpected response from Language Server: {item}",
+                        logging.ERROR,
+                    )
         elif isinstance(response, dict):
             # response is of type Location
             assert LSPConstants.URI in response
@@ -441,7 +444,10 @@ class LanguageServer:
             )
             ret.append(multilspy_types.Location(**new_item))
         else:
-            assert False, f"Unexpected response from Language Server: {response}"
+            self.logger.log(
+                f"Unexpected response from Language Server: {response}",
+                logging.ERROR,
+            )
 
         return ret
 
