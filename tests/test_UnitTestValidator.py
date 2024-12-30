@@ -256,3 +256,123 @@ class TestUnitValidator:
                 assert generator.diff_cover_report_path.endswith(
                     "diff-cover-report.json"
                 )
+
+    def test_assess_quality(self):
+        with tempfile.NamedTemporaryFile(
+            suffix=".py", delete=False
+        ) as temp_source_file:
+            validator = UnitTestValidator(
+                source_file_path=temp_source_file.name,
+                test_file_path="test_test.py",
+                code_coverage_report_path="coverage.xml",
+                test_command="pytest",
+                llm_model="gpt-3",
+            )
+
+            mock_response = """
+            quality: High
+            readability: Excellent
+            maintainability: Good
+            efficiency: High
+            """
+
+            with patch.object(
+                validator.ai_caller, "call_model", return_value=(mock_response, 10, 10)
+            ):
+                quality_assessment = validator.assess_quality("generated_code")
+                assert quality_assessment["quality"] == "High"
+                assert quality_assessment["readability"] == "Excellent"
+                assert quality_assessment["maintainability"] == "Good"
+                assert quality_assessment["efficiency"] == "High"
+
+    def test_assess_relevance(self):
+        with tempfile.NamedTemporaryFile(
+            suffix=".py", delete=False
+        ) as temp_source_file:
+            validator = UnitTestValidator(
+                source_file_path=temp_source_file.name,
+                test_file_path="test_test.py",
+                code_coverage_report_path="coverage.xml",
+                test_command="pytest",
+                llm_model="gpt-3",
+            )
+
+            mock_response = """
+            relevance: High
+            alignment_with_requirements: Excellent
+            appropriateness_of_solution: Good
+            """
+
+            with patch.object(
+                validator.ai_caller, "call_model", return_value=(mock_response, 10, 10)
+            ):
+                relevance_assessment = validator.assess_relevance("generated_code")
+                assert relevance_assessment["relevance"] == "High"
+                assert relevance_assessment["alignment_with_requirements"] == "Excellent"
+                assert relevance_assessment["appropriateness_of_solution"] == "Good"
+
+    def test_assess_accuracy(self):
+        with tempfile.NamedTemporaryFile(
+            suffix=".py", delete=False
+        ) as temp_source_file:
+            validator = UnitTestValidator(
+                source_file_path=temp_source_file.name,
+                test_file_path="test_test.py",
+                code_coverage_report_path="coverage.xml",
+                test_command="pytest",
+                llm_model="gpt-3",
+            )
+
+            mock_response = """
+            accuracy: High
+            correctness: Excellent
+            adherence_to_specifications: Good
+            """
+
+            with patch.object(
+                validator.ai_caller, "call_model", return_value=(mock_response, 10, 10)
+            ):
+                accuracy_assessment = validator.assess_accuracy("generated_code")
+                assert accuracy_assessment["accuracy"] == "High"
+                assert accuracy_assessment["correctness"] == "Excellent"
+                assert accuracy_assessment["adherence_to_specifications"] == "Good"
+
+    def test_log_assessment_results(self):
+        with tempfile.NamedTemporaryFile(
+            suffix=".py", delete=False
+        ) as temp_source_file:
+            validator = UnitTestValidator(
+                source_file_path=temp_source_file.name,
+                test_file_path="test_test.py",
+                code_coverage_report_path="coverage.xml",
+                test_command="pytest",
+                llm_model="gpt-3",
+            )
+
+            mock_logger = MagicMock()
+            validator.logger = mock_logger
+
+            quality_assessment = {
+                "quality": "High",
+                "readability": "Excellent",
+                "maintainability": "Good",
+                "efficiency": "High",
+            }
+            relevance_assessment = {
+                "relevance": "High",
+                "alignment_with_requirements": "Excellent",
+                "appropriateness_of_solution": "Good",
+            }
+            accuracy_assessment = {
+                "accuracy": "High",
+                "correctness": "Excellent",
+                "adherence_to_specifications": "Good",
+            }
+
+            validator.log_assessment_results(
+                quality_assessment, relevance_assessment, accuracy_assessment
+            )
+
+            mock_logger.info.assert_any_call(f"Quality Assessment: {quality_assessment}")
+            mock_logger.info.assert_any_call(f"Relevance Assessment: {relevance_assessment}")
+            mock_logger.info.assert_any_call(f"Accuracy Assessment: {accuracy_assessment}")
