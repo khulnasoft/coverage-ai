@@ -777,3 +777,112 @@ class UnitTestValidator:
             f'Fatal: Error running diff coverage command. Are you sure the command is correct? "{coverage_command}"'
             f"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}"
         )
+
+    def assess_quality(self, generated_code: str) -> dict:
+        """
+        Assess the quality of the generated code.
+
+        Parameters:
+            generated_code (str): The generated code to assess.
+
+        Returns:
+            dict: A dictionary containing the quality assessment results.
+        """
+        try:
+            # Build the prompt for quality assessment
+            self.prompt_builder.processed_test_file = generated_code
+            custom_prompt = self.prompt_builder.build_prompt_custom(
+                file="assess_quality"
+            )
+
+            # Run the quality assessment via LLM
+            response, prompt_token_count, response_token_count = (
+                self.ai_caller.call_model(prompt=custom_prompt, stream=False)
+            )
+            self.total_input_token_count += prompt_token_count
+            self.total_output_token_count += response_token_count
+
+            # Parse the response
+            quality_assessment = load_yaml(response)
+            return quality_assessment
+        except Exception as e:
+            logging.error(f"Error assessing quality: {e}")
+            return {}
+
+    def assess_relevance(self, generated_code: str) -> dict:
+        """
+        Assess the relevance of the generated code.
+
+        Parameters:
+            generated_code (str): The generated code to assess.
+
+        Returns:
+            dict: A dictionary containing the relevance assessment results.
+        """
+        try:
+            # Build the prompt for relevance assessment
+            self.prompt_builder.processed_test_file = generated_code
+            custom_prompt = self.prompt_builder.build_prompt_custom(
+                file="assess_relevance"
+            )
+
+            # Run the relevance assessment via LLM
+            response, prompt_token_count, response_token_count = (
+                self.ai_caller.call_model(prompt=custom_prompt, stream=False)
+            )
+            self.total_input_token_count += prompt_token_count
+            self.total_output_token_count += response_token_count
+
+            # Parse the response
+            relevance_assessment = load_yaml(response)
+            return relevance_assessment
+        except Exception as e:
+            logging.error(f"Error assessing relevance: {e}")
+            return {}
+
+    def assess_accuracy(self, generated_code: str) -> dict:
+        """
+        Assess the accuracy of the generated code.
+
+        Parameters:
+            generated_code (str): The generated code to assess.
+
+        Returns:
+            dict: A dictionary containing the accuracy assessment results.
+        """
+        try:
+            # Build the prompt for accuracy assessment
+            self.prompt_builder.processed_test_file = generated_code
+            custom_prompt = self.prompt_builder.build_prompt_custom(
+                file="assess_accuracy"
+            )
+
+            # Run the accuracy assessment via LLM
+            response, prompt_token_count, response_token_count = (
+                self.ai_caller.call_model(prompt=custom_prompt, stream=False)
+            )
+            self.total_input_token_count += prompt_token_count
+            self.total_output_token_count += response_token_count
+
+            # Parse the response
+            accuracy_assessment = load_yaml(response)
+            return accuracy_assessment
+        except Exception as e:
+            logging.error(f"Error assessing accuracy: {e}")
+            return {}
+
+    def log_assessment_results(self, quality: dict, relevance: dict, accuracy: dict):
+        """
+        Log the results of the quality, relevance, and accuracy assessments.
+
+        Parameters:
+            quality (dict): The quality assessment results.
+            relevance (dict): The relevance assessment results.
+            accuracy (dict): The accuracy assessment results.
+
+        Returns:
+            None
+        """
+        self.logger.info(f"Quality Assessment: {quality}")
+        self.logger.info(f"Relevance Assessment: {relevance}")
+        self.logger.info(f"Accuracy Assessment: {accuracy}")

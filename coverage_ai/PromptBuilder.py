@@ -33,6 +33,31 @@ Below is a list of failed tests that were generated in previous iterations. Do n
 ======
 """
 
+QUALITY_ASSESSMENT_TEXT = """
+## Quality Assessment
+Please assess the quality of the generated code based on the following criteria:
+1. Code readability
+2. Code maintainability
+3. Code efficiency
+======
+"""
+
+RELEVANCE_ASSESSMENT_TEXT = """
+## Relevance Assessment
+Please assess the relevance of the generated code based on the following criteria:
+1. Alignment with the project requirements
+2. Appropriateness of the solution
+======
+"""
+
+ACCURACY_ASSESSMENT_TEXT = """
+## Accuracy Assessment
+Please assess the accuracy of the generated code based on the following criteria:
+1. Correctness of the implementation
+2. Adherence to the specifications
+======
+"""
+
 
 class PromptBuilder:
     def __init__(
@@ -145,6 +170,9 @@ class PromptBuilder:
             "testing_framework": self.testing_framework,
             "stdout": self.stdout_from_run,
             "stderr": self.stderr_from_run,
+            "quality_assessment_section": QUALITY_ASSESSMENT_TEXT,
+            "relevance_assessment_section": RELEVANCE_ASSESSMENT_TEXT,
+            "accuracy_assessment_section": ACCURACY_ASSESSMENT_TEXT,
         }
         environment = Environment(undefined=StrictUndefined)
         try:
@@ -188,6 +216,9 @@ class PromptBuilder:
             "stdout": self.stdout_from_run,
             "stderr": self.stderr_from_run,
             "processed_test_file": self.processed_test_file,
+            "quality_assessment_section": QUALITY_ASSESSMENT_TEXT,
+            "relevance_assessment_section": RELEVANCE_ASSESSMENT_TEXT,
+            "accuracy_assessment_section": ACCURACY_ASSESSMENT_TEXT,
         }
         environment = Environment(undefined=StrictUndefined)
         try:

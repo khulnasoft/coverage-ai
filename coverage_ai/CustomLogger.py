@@ -61,3 +61,21 @@ class CustomLogger:
             logger.propagate = False
 
         return logger
+
+    @classmethod
+    def log_assessment_results(cls, logger, quality: dict, relevance: dict, accuracy: dict):
+        """
+        Log the results of the quality, relevance, and accuracy assessments.
+
+        Parameters:
+            logger (logging.Logger): The logger object.
+            quality (dict): The quality assessment results.
+            relevance (dict): The relevance assessment results.
+            accuracy (dict): The accuracy assessment results.
+
+        Returns:
+            None
+        """
+        logger.info(f"Quality Assessment: {quality}")
+        logger.info(f"Relevance Assessment: {relevance}")
+        logger.info(f"Accuracy Assessment: {accuracy}")
