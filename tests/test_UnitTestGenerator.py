@@ -104,3 +104,63 @@ class TestUnitTestGenerator:
                 # The eventual call to try_fix_yaml() will end up spitting out the same string but deeming is "YAML."
                 # While this is not a valid YAML, the function will return the original string (for better or for worse).
                 assert result == "This is not YAML"
+
+    def test_assess_quality(self):
+        with tempfile.NamedTemporaryFile(
+            suffix=".py", delete=False
+        ) as temp_source_file:
+            generator = UnitTestGenerator(
+                source_file_path=temp_source_file.name,
+                test_file_path="test_test.py",
+                code_coverage_report_path="coverage.xml",
+                test_command="pytest",
+                llm_model="gpt-3",
+            )
+            generated_code = "def test_example(): assert True"
+            with patch.object(
+                generator.ai_caller,
+                "call_model",
+                return_value=("quality: good", 10, 10),
+            ):
+                result = generator.assess_quality(generated_code)
+                assert result == {"quality": "good"}
+
+    def test_assess_relevance(self):
+        with tempfile.NamedTemporaryFile(
+            suffix=".py", delete=False
+        ) as temp_source_file:
+            generator = UnitTestGenerator(
+                source_file_path=temp_source_file.name,
+                test_file_path="test_test.py",
+                code_coverage_report_path="coverage.xml",
+                test_command="pytest",
+                llm_model="gpt-3",
+            )
+            generated_code = "def test_example(): assert True"
+            with patch.object(
+                generator.ai_caller,
+                "call_model",
+                return_value=("relevance: high", 10, 10),
+            ):
+                result = generator.assess_relevance(generated_code)
+                assert result == {"relevance": "high"}
+
+    def test_assess_accuracy(self):
+        with tempfile.NamedTemporaryFile(
+            suffix=".py", delete=False
+        ) as temp_source_file:
+            generator = UnitTestGenerator(
+                source_file_path=temp_source_file.name,
+                test_file_path="test_test.py",
+                code_coverage_report_path="coverage.xml",
+                test_command="pytest",
+                llm_model="gpt-3",
+            )
+            generated_code = "def test_example(): assert True"
+            with patch.object(
+                generator.ai_caller,
+                "call_model",
+                return_value=("accuracy: high", 10, 10),
+            ):
+                result = generator.assess_accuracy(generated_code)
+                assert result == {"accuracy": "high"}
