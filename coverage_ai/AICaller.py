@@ -159,5 +159,65 @@ class AICaller:
             except Exception as e:
                 print(f"Error logging to W&B: {e}")
 
+        # Log the quality, relevance, and accuracy of the generated code
+        self.log_assessment_results(content)
+
         # Returns: Response, Prompt token count, and Completion token count
         return content, prompt_tokens, completion_tokens
+
+    def log_assessment_results(self, generated_code: str):
+        """
+        Log the quality, relevance, and accuracy of the generated code.
+
+        Parameters:
+            generated_code (str): The generated code to assess.
+
+        Returns:
+            None
+        """
+        quality_assessment = self.assess_quality(generated_code)
+        relevance_assessment = self.assess_relevance(generated_code)
+        accuracy_assessment = self.assess_accuracy(generated_code)
+
+        print(f"Quality Assessment: {quality_assessment}")
+        print(f"Relevance Assessment: {relevance_assessment}")
+        print(f"Accuracy Assessment: {accuracy_assessment}")
+
+    def assess_quality(self, generated_code: str) -> dict:
+        """
+        Assess the quality of the generated code.
+
+        Parameters:
+            generated_code (str): The generated code to assess.
+
+        Returns:
+            dict: A dictionary containing the quality assessment results.
+        """
+        # Placeholder implementation, replace with actual assessment logic
+        return {"quality": "assessed"}
+
+    def assess_relevance(self, generated_code: str) -> dict:
+        """
+        Assess the relevance of the generated code.
+
+        Parameters:
+            generated_code (str): The generated code to assess.
+
+        Returns:
+            dict: A dictionary containing the relevance assessment results.
+        """
+        # Placeholder implementation, replace with actual assessment logic
+        return {"relevance": "assessed"}
+
+    def assess_accuracy(self, generated_code: str) -> dict:
+        """
+        Assess the accuracy of the generated code.
+
+        Parameters:
+            generated_code (str): The generated code to assess.
+
+        Returns:
+            dict: A dictionary containing the accuracy assessment results.
+        """
+        # Placeholder implementation, replace with actual assessment logic
+        return {"accuracy": "assessed"}
