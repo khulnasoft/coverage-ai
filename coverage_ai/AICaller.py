@@ -132,16 +132,12 @@ class AICaller:
             prompt_tokens = int(usage["prompt_tokens"])
             completion_tokens = int(usage["completion_tokens"])
         else:
-            try:
-                # Non-streaming response is a CompletionResponse object
-                content = response.choices[0].message.content
-                print(f"Printing results from LLM model...\n{content}")
-                usage = response.usage
-                prompt_tokens = int(usage.prompt_tokens)
-                completion_tokens = int(usage.completion_tokens)
-            except Exception as e:
-                print(f"Error processing LLM model response: {e}")
-                raise e
+            # Non-streaming response is a CompletionResponse object
+            content = response.choices[0].message.content
+            print(f"Printing results from LLM model...\n{content}")
+            usage = response.usage
+            prompt_tokens = int(usage.prompt_tokens)
+            completion_tokens = int(usage.completion_tokens)
 
         if "WANDB_API_KEY" in os.environ:
             try:

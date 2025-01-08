@@ -3,16 +3,21 @@ import datetime
 import json
 import logging
 import os
-import re
+
+from diff_cover.diff_cover_tool import main as diff_cover_main
 
 from coverage_ai.AICaller import AICaller
-from coverage_ai.CoverageProcessor import CoverageProcessor
 from coverage_ai.CustomLogger import CustomLogger
 from coverage_ai.FilePreprocessor import FilePreprocessor
 from coverage_ai.PromptBuilder import PromptBuilder
 from coverage_ai.Runner import Runner
 from coverage_ai.settings.config_loader import get_settings
 from coverage_ai.utils import load_yaml
+from coverage_ai.coverage.processor import (
+    process_coverage,
+    CoverageReport,
+    CoverageData,
+)
 
 
 class UnitTestValidator:
@@ -110,15 +115,6 @@ class UnitTestValidator:
         with open(self.source_file_path, "r") as f:
             self.source_code = f.read()
 
-        # initialize the coverage processor
-        self.coverage_processor = CoverageProcessor(
-            file_path=self.code_coverage_report_path,
-            src_file_path=self.source_file_path,
-            coverage_type=self.coverage_type,
-            use_report_coverage_feature_flag=self.use_report_coverage_feature_flag,
-            diff_coverage_report_path=self.diff_cover_report_path,
-        )
-
     def get_coverage(self):
         """
         Run code coverage and build the prompt to be used for generating tests.
@@ -128,6 +124,9 @@ class UnitTestValidator:
         """
         # Run coverage and build the prompt
         self.run_coverage()
+        # Run diff coverage if enabled
+        if self.diff_coverage:
+            self.generate_diff_coverage_report()
         return (
             self.failed_test_runs,
             self.language,
@@ -135,7 +134,7 @@ class UnitTestValidator:
             self.code_coverage_report,
         )
 
-    def get_code_language(self, source_file_path):
+    def get_code_language(self, source_file_path: str) -> str:
         """
         Get the programming language based on the file extension of the provided source file path.
 
@@ -262,7 +261,9 @@ class UnitTestValidator:
                 relevant_line_number_to_insert_imports_after = tests_dict.get(
                     "relevant_line_number_to_insert_imports_after", None
                 )
-                self.testing_framework = tests_dict.get("testing_framework", "Unknown")
+                self.testing_framework: str = tests_dict.get(
+                    "testing_framework", "Unknown"
+                )
                 counter_attempts += 1
 
             if not relevant_line_number_to_insert_tests_after:
@@ -303,14 +304,11 @@ class UnitTestValidator:
         ), f'Fatal: Error running test command. Are you sure the command is correct? "{self.test_command}"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}'
 
         try:
-            # Process the extracted coverage metrics
-            coverage, coverage_percentages = self.post_process_coverage_report(
+            self.current_coverage_report = self.post_process_coverage_report(
                 time_of_test_command
             )
-            self.current_coverage = coverage
-            self.last_coverage_percentages = coverage_percentages.copy()
             self.logger.info(
-                f"Initial coverage: {round(self.current_coverage * 100, 2)}%"
+                f"Initial coverage: {round(self.current_coverage_report.total_coverage * 100, 2)}%"
             )
 
         except AssertionError as error:
@@ -513,11 +511,15 @@ class UnitTestValidator:
 
                 # If test passed, check for coverage increase
                 try:
-                    new_percentage_covered, new_coverage_percentages = (
-                        self.post_process_coverage_report(time_of_test_command)
+                    new_coverage_report = self.post_process_coverage_report(
+                        time_of_test_command
                     )
 
-                    if new_percentage_covered <= self.current_coverage:
+                    if (
+                        self.current_coverage_report is not None
+                        and new_coverage_report.total_coverage
+                        <= self.current_coverage_report.total_coverage
+                    ):
                         # Coverage has not increased, rollback the test by removing it from the test file
                         with open(self.test_file_path, "w") as test_file:
                             test_file.write(original_content)
@@ -540,7 +542,7 @@ class UnitTestValidator:
                         self.failed_test_runs.append(
                             {
                                 "code": fail_details["test"],
-                                "error_message": "Code coverage did not increase",
+                                "error_message": "Test did not increase code coverage",
                             }
                         )  # Append failure details to the list
 
@@ -589,27 +591,25 @@ class UnitTestValidator:
                     additional_imports_lines
                 )  # this is important, otherwise the next test will be inserted at the wrong line
 
-                for key in new_coverage_percentages:
+                for key in new_coverage_report.file_coverage:
+                    new_v: CoverageData = new_coverage_report.file_coverage[key]
+                    old_v: CoverageData = self.current_coverage_report.file_coverage[
+                        key
+                    ]
                     if (
-                        new_coverage_percentages[key]
-                        > self.last_coverage_percentages[key]
+                        new_v.coverage > old_v.coverage
                         and key == self.source_file_path.split("/")[-1]
                     ):
                         self.logger.info(
-                            f"Coverage for provided source file: {key} increased from {round(self.last_coverage_percentages[key] * 100, 2)} to {round(new_coverage_percentages[key] * 100, 2)}"
+                            f"Coverage for provided source file: {key} increased from {round(self.last_coverage_percentages[key] * 100, 2)} to {round(new_v.coverage * 100, 2)}"
                         )
-                    elif (
-                        new_coverage_percentages[key]
-                        > self.last_coverage_percentages[key]
-                    ):
+                    elif new_v.coverage > old_v.coverage:
                         self.logger.info(
-                            f"Coverage for non-source file: {key} increased from {round(self.last_coverage_percentages[key] * 100, 2)} to {round(new_coverage_percentages[key] * 100, 2)}"
+                            f"Coverage for non-source file: {key} increased from {round(self.last_coverage_percentages[key] * 100, 2)} to {round(new_v.coverage * 100, 2)}"
                         )
-                self.current_coverage = new_percentage_covered
-                self.last_coverage_percentages = new_coverage_percentages.copy()
 
                 self.logger.info(
-                    f"Test passed and coverage increased. Current coverage: {round(new_percentage_covered * 100, 2)}%"
+                    f"Test passed and coverage increased. Current coverage: {round(new_coverage_report.total_coverage * 100, 2)}%"
                 )
                 return {
                     "status": "PASS",
@@ -707,73 +707,48 @@ class UnitTestValidator:
             logging.error(f"Error extracting error message: {e}")
             return ""
 
-    def post_process_coverage_report(self, time_of_test_command):
-        coverage_percentages = {}
-        if self.use_report_coverage_feature_flag:
-            self.logger.info(
-                "Using the report coverage feature flag to process the coverage report"
-            )
-            file_coverage_dict = self.coverage_processor.process_coverage_report(
-                time_of_test_command=time_of_test_command
-            )
-            total_lines_covered = 0
-            total_lines_missed = 0
-            total_lines = 0
-            for key in file_coverage_dict:
-                lines_covered, lines_missed, percentage_covered = file_coverage_dict[
-                    key
-                ]
-                total_lines_covered += len(lines_covered)
-                total_lines_missed += len(lines_missed)
-                total_lines += len(lines_covered) + len(lines_missed)
-                if key == self.source_file_path:
-                    self.last_source_file_coverage = percentage_covered
-                if key not in coverage_percentages:
-                    coverage_percentages[key] = 0
-                coverage_percentages[key] = percentage_covered
-            try:
-                percentage_covered = total_lines_covered / total_lines
-            except ZeroDivisionError:
-                self.logger.error(
-                    f"ZeroDivisionError: Attempting to perform total_lines_covered / total_lines: {total_lines_covered} / {total_lines}."
-                )
-                percentage_covered = 0
-
-            self.logger.info(
-                f"Total lines covered: {total_lines_covered}, Total lines missed: {total_lines_missed}, Total lines: {total_lines}"
-            )
-            self.logger.info(
-                f"coverage: Percentage {round(percentage_covered * 100, 2)}%"
-            )
-        elif self.diff_coverage:
-            self.generate_diff_coverage_report()
-            lines_covered, lines_missed, percentage_covered = (
-                self.coverage_processor.process_coverage_report(
-                    time_of_test_command=time_of_test_command
-                )
-            )
-            self.code_coverage_report = f"Lines covered: {lines_covered}\nLines missed: {lines_missed}\nPercentage covered: {round(percentage_covered * 100, 2)}%"
-        else:
-            lines_covered, lines_missed, percentage_covered = (
-                self.coverage_processor.process_coverage_report(
-                    time_of_test_command=time_of_test_command
-                )
-            )
-            self.code_coverage_report = f"Lines covered: {lines_covered}\nLines missed: {lines_missed}\nPercentage covered: {round(percentage_covered * 100, 2)}%"
-        return percentage_covered, coverage_percentages
+    def post_process_coverage_report(self, time_of_test_command: int):
+        report: CoverageReport = process_coverage(
+            tool_type=self.coverage_type,
+            time_of_test_command=time_of_test_command,
+            report_path=self.code_coverage_report_path,
+            src_file_path=self.source_file_path,
+            is_global_coverage_enabled=self.use_report_coverage_feature_flag,
+            file_pattern=None,
+            diff_coverage_report_path=self.diff_cover_report_path,
+        )
+        self.logger.info(
+            f"coverage: Percentage {round(report.total_coverage * 100, 2)}%"
+        )
+        return report
 
     def generate_diff_coverage_report(self):
-        # Run the diff-cover command to generate a JSON diff coverage report
-        coverage_filename = os.path.basename(self.code_coverage_report_path)
-        coverage_command = f"diff-cover --json-report {self.diff_coverage_report_name} --compare-branch={self.comparison_branch} {coverage_filename}"
-        # Log and execute the diff coverage command
-        self.logger.info(f'Running diff coverage command: "{coverage_command}"')
-        stdout, stderr, exit_code, _ = Runner.run_command(
-            command=coverage_command, cwd=self.test_command_dir
-        )
+        """
+        Generates a JSON diff coverage report using the diff-cover tool.
+        This method runs the diff-cover command with the specified arguments to generate
+        a JSON report that shows the coverage differences between the current branch and
+        the specified comparison branch.
+        Args:
+            None
+        Returns:
+            None
+        Raises:
+            Exception: If an error occurs while running the diff-cover command.
+        """
 
-        # Ensure the diff command executed successfully
-        assert exit_code == 0, (
-            f'Fatal: Error running diff coverage command. Are you sure the command is correct? "{coverage_command}"'
-            f"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}"
-        )
+        diff_cover_args = [
+            "diff-cover",
+            "--json-report",
+            self.diff_cover_report_path,
+            "--compare-branch={}".format(self.comparison_branch),
+            self.code_coverage_report_path,
+        ]
+
+        self.logger.info(f'Running diff coverage module with args: "{diff_cover_args}"')
+        try:
+            diff_cover_main(diff_cover_args)
+        except Exception as e:
+            self.logger.error(f"Error running diff-cover: {e}")
+
+    def get_current_coverage(self):
+        return self.current_coverage_report.total_coverage

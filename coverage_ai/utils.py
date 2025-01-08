@@ -166,7 +166,7 @@ def parse_args_full_repo():
     parser.add_argument(
         "--look-for-oldest-unchanged-test-file",
         action="store_true",
-        help="If set, Coverage-Ai will look for the oldest unchanged test file to analyze.",
+        help="If set, Cover-Agent will look for the oldest unchanged test file to analyze.",
     )
 
     parser.add_argument(
@@ -247,7 +247,7 @@ def parse_args_full_repo():
     parser.add_argument(
         "--strict-coverage",
         action="store_true",
-        help="If set, Coverage-Ai will return a non-zero exit code if the desired code coverage is not achieved. Default: False.",
+        help="If set, Cover-Agent will return a non-zero exit code if the desired code coverage is not achieved. Default: False.",
     )
     parser.add_argument(
         "--run-tests-multiple-times",

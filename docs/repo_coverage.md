@@ -10,7 +10,7 @@ How to run:
 name = "coverage-ai"
 version = "0.0.0" # Placeholder
 description = "Coverage Ai Tool"
-authors = ["QodoAI"]
+authors = ["KhulnaSoft"]
 license = "AGPL-3.0 license"
 readme = "README.md"
 ```

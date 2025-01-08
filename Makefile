@@ -1,5 +1,7 @@
 # Makefile
-SITE_PACKAGES=$(shell python -c "import wandb, os; print(os.path.dirname(wandb.__file__))")
+SITE_PACKAGES=$(shell python3 -c "import wandb, os; print(os.path.dirname(wandb.__file__))")
+DIFF_COVER_TEMPLATES=$(shell python3 -c "import diff_cover, os; print(os.path.join(os.path.dirname(diff_cover.__file__), 'templates'))")
+TOML_FILES=$(shell find coverage_ai/settings -name "*.toml" | sed 's/.*/-\-add-data "&:."/' | tr '\n' ' ')
 
 .PHONY: test build installer
 
@@ -19,14 +21,10 @@ build:
 installer:
 	poetry run pyinstaller \
 		--add-data "coverage_ai/version.txt:." \
-		--add-data "coverage_ai/settings/analyze_suite_test_headers_indentation.toml:." \
-		--add-data "coverage_ai/settings/analyze_suite_test_insert_line.toml:." \
-		--add-data "coverage_ai/settings/analyze_test_against_context.toml:." \
-		--add-data "coverage_ai/settings/analyze_test_run_failure.toml:." \
-		--add-data "coverage_ai/settings/configuration.toml:." \
-		--add-data "coverage_ai/settings/language_extensions.toml:." \
-		--add-data "coverage_ai/settings/test_generation_prompt.toml:." \
+		$(TOML_FILES) \
 		--add-data "$(SITE_PACKAGES)/vendor:wandb/vendor" \
+		--add-data "build_helpers/anthropic_tokenizer.json:litellm/litellm_core_utils/tokenizers" \
+		--add-data "$(DIFF_COVER_TEMPLATES):diff_cover/templates" \
 		--hidden-import=tiktoken_ext.openai_public \
 		--hidden-import=tiktoken_ext \
 		--hidden-import=wandb \

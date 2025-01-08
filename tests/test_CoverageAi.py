@@ -1,4 +1,5 @@
 from coverage_ai.CoverageAi import CoverageAi
+from coverage_ai.coverage.processor import CoverageReport
 from coverage_ai.main import parse_args
 from unittest.mock import patch, MagicMock
 import argparse
@@ -135,13 +136,12 @@ class TestCoverageAi:
                     run_tests_multiple_times=1,
                 )
 
-                with pytest.raises(AssertionError) as exc_info:
+                with pytest.raises(FileNotFoundError) as exc_info:
                     agent = CoverageAi(args)
                     failed_test_runs = agent.test_validator.get_coverage()
                     agent.test_gen.build_prompt(failed_test_runs)
                     agent._duplicate_test_file()
-
-                assert "Fatal: Coverage report" in str(exc_info.value)
+                assert "Coverage report" in str(exc_info.value)
                 mock_copy.assert_called_once_with(
                     args.test_file_path, args.test_file_output_path
                 )
@@ -181,13 +181,12 @@ class TestCoverageAi:
                     run_tests_multiple_times=1,
                 )
 
-                with pytest.raises(AssertionError) as exc_info:
+                with pytest.raises(FileNotFoundError) as exc_info:
                     agent = CoverageAi(args)
                     failed_test_runs = agent.test_validator.get_coverage()
                     agent.test_gen.build_prompt(failed_test_runs)
                     agent._duplicate_test_file()
-
-                assert "Fatal: Coverage report" in str(exc_info.value)
+                assert "Coverage report" in str(exc_info.value)
                 assert args.test_file_output_path == args.test_file_path
 
         # Clean up the temp files
@@ -237,7 +236,9 @@ class TestCoverageAi:
                 )
                 # Mock the methods used in run
                 validator = mock_unit_test_validator.return_value
-                validator.current_coverage = 0.5  # below desired coverage
+                validator.get_current_coverage.return_value = (
+                    0.5  # below desired coverage
+                )
                 validator.desired_coverage = 90
                 validator.get_coverage.return_value = [{}, "python", "pytest", ""]
                 generator = mock_unit_test_generator.return_value
@@ -309,7 +310,7 @@ class TestCoverageAi:
                     diff_coverage=True,
                     branch="main",
                 )
-                mock_test_validator.return_value.current_coverage = 0.5
+                mock_test_validator.return_value.get_current_coverage.return_value = 0.5
                 mock_test_validator.return_value.desired_coverage = 90
                 mock_test_validator.return_value.get_coverage.return_value = [
                     {},
@@ -323,7 +324,7 @@ class TestCoverageAi:
                 agent = CoverageAi(args)
                 agent.run()
                 mock_logger.get_logger.return_value.info.assert_any_call(
-                    f"Current Diff Coverage: {round(mock_test_validator.return_value.current_coverage * 100, 2)}%"
+                    f"Current Diff Coverage: {round(mock_test_validator.return_value.get_current_coverage() * 100, 2)}%"
                 )
 
         # Clean up the temp files

@@ -29,7 +29,7 @@ class FilePreprocessor:
         """
         Action to process Python files by checking for class definitions and indenting if found.
         """
-        if self._contains_class_definition() or self._contains_function_definition() or self._contains_import_statement():
+        if self._contains_class_definition():
             return textwrap.indent(text, "    ")
         return text
 
@@ -43,36 +43,6 @@ class FilePreprocessor:
             parsed_ast = ast.parse(content)
             for node in ast.walk(parsed_ast):
                 if isinstance(node, ast.ClassDef):
-                    return True
-        except SyntaxError as e:
-            print(f"Syntax error when parsing the file: {e}")
-        return False
-
-    def _contains_function_definition(self) -> bool:
-        """
-        Check if the file contains a Python function definition using the ast module.
-        """
-        try:
-            with open(self.path_to_file, "r") as file:
-                content = file.read()
-            parsed_ast = ast.parse(content)
-            for node in ast.walk(parsed_ast):
-                if isinstance(node, ast.FunctionDef):
-                    return True
-        except SyntaxError as e:
-            print(f"Syntax error when parsing the file: {e}")
-        return False
-
-    def _contains_import_statement(self) -> bool:
-        """
-        Check if the file contains a Python import statement using the ast module.
-        """
-        try:
-            with open(self.path_to_file, "r") as file:
-                content = file.read()
-            parsed_ast = ast.parse(content)
-            for node in ast.walk(parsed_ast):
-                if isinstance(node, (ast.Import, ast.ImportFrom)):
                     return True
         except SyntaxError as e:
             print(f"Syntax error when parsing the file: {e}")

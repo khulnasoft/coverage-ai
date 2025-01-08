@@ -6,7 +6,6 @@ import os
 import re
 
 from coverage_ai.AICaller import AICaller
-from coverage_ai.CoverageProcessor import CoverageProcessor
 from coverage_ai.CustomLogger import CustomLogger
 from coverage_ai.FilePreprocessor import FilePreprocessor
 from coverage_ai.PromptBuilder import PromptBuilder
