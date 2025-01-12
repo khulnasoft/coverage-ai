@@ -89,7 +89,7 @@ def parse_args():
     parser.add_argument(
         "--strict-coverage",
         action="store_true",
-        help="If set, Coverage-Ai will return a non-zero exit code if the desired code coverage is not achieved. Default: False.",
+        help="If set, Cover-Agent will return a non-zero exit code if the desired code coverage is not achieved. Default: False.",
     )
     parser.add_argument(
         "--run-tests-multiple-times",
@@ -121,7 +121,7 @@ def parse_args():
         "--diff-coverage",
         action="store_true",
         default=False,
-        help="If set, Coverage-Ai will only generate tests based on the diff between branches. Default: False. Not compatible with --use-report-coverage-feature-flag.",
+        help="If set, Cover-Agent will only generate tests based on the diff between branches. Default: False. Not compatible with --use-report-coverage-feature-flag.",
     )
     parser.add_argument(
         "--run-each-test-separately",

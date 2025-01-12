@@ -1,4 +1,3 @@
-from coverage_ai.CoverageProcessor import CoverageProcessor
 from coverage_ai.ReportGenerator import ReportGenerator
 from coverage_ai.Runner import Runner
 from coverage_ai.UnitTestGenerator import UnitTestGenerator
