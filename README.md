@@ -34,7 +34,6 @@ Khulnasoft Cover aims to help efficiently increase code coverage, by automatical
 
 
 ## News and Updates
-### 2025-06-15
 > **⚠️ This repository is no longer maintained. Please fork it if you wish to continue development or use it in your own projects.**
 
 ### 2024-12-04:
