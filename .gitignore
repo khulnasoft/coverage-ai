@@ -1,3 +1,11 @@
+
+
+
+
+
+
+
+
 # MacOS system files
 .DS_Store
 
@@ -19,9 +27,12 @@ __pycache__
 
 # Generated debug files
 generated_prompt.md
-test_results.html
 run.log
 *.db
+
+# Test files
+htmlcov/
+test_results.html
 
 # PyInstaller Generated files
 /build/
@@ -43,3 +54,6 @@ pyvenv.cfg
 pip-log.txt
 pip-delete-this-directory.txt
 *.spec
+
+# Other
+wandb/

@@ -1,14 +1,17 @@
 import asyncio
 import copy
-import os
-from coverage_ai.AICaller import AICaller
-from coverage_ai.utils import parse_args_full_repo, find_test_files
-from coverage_ai.CoverageAi import CoverageAi
+
+from coverage_ai.ai_caller import AICaller
+from coverage_ai.coverage_ai import CoverAgent
 from coverage_ai.lsp_logic.ContextHelper import ContextHelper
+from coverage_ai.settings.config_loader import get_settings
+from coverage_ai.settings.config_schema import CoverAgentConfig
+from coverage_ai.utils import find_test_files, parse_args_full_repo
 
 
 async def run():
-    args = parse_args_full_repo()
+    settings = get_settings().get("default")
+    args = parse_args_full_repo(settings)
 
     if args.project_language == "python":
         context_helper = ContextHelper(args)
@@ -28,7 +31,11 @@ async def run():
     async with context_helper.start_server():
         print("LSP server initialized.")
 
-        ai_caller = AICaller(model=args.model)
+        generate_log_files = not args.suppress_log_files
+        api_base = getattr(args, "api_base", "")
+        ai_caller = AICaller(
+            model=args.model, api_base=api_base, generate_log_files=generate_log_files
+        )
 
         # main loop for analyzing test files
         for test_file in test_files:
@@ -48,16 +55,18 @@ async def run():
 
             if source_file:
                 try:
-                    # Run the CoverageAi for the test file
+                    # Run the CoverAgent for the test file
                     args_copy = copy.deepcopy(args)
                     args_copy.source_file_path = source_file
                     args_copy.test_command_dir = args.project_root
                     args_copy.test_file_path = test_file
                     args_copy.included_files = context_files_include
-                    agent = CoverageAi(args_copy)
+
+                    config = CoverAgentConfig.from_cli_args_with_defaults(args_copy)
+                    agent = CoverAgent(config)
                     agent.run()
                 except Exception as e:
-                    print(f"Error running CoverageAi for test file '{test_file}': {e}")
+                    print(f"Error running CoverAgent for test file '{test_file}': {e}")
                     pass
 
 

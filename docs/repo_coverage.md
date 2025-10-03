@@ -3,13 +3,13 @@
 New mode - scan an entire repo, auto identify the test files, auto collect context for each test file, and extend the test suite with new tests.
 How to run:
 
-1) Install coverage-ai on your existing project venv: `pip install git+https://github.com/khulnasoft/coverage-ai.git`
+1) Install cover-agent on your existing project venv: `pip install git+https://github.com/KhulnaSoft/cover-agent.git`
 2) If your project doesn't have a `pyproject.toml` file, create one with:
 ```
 [tool.poetry]
-name = "coverage-ai"
+name = "cover-agent"
 version = "0.0.0" # Placeholder
-description = "Coverage Ai Tool"
+description = "Cover Agent Tool"
 authors = ["KhulnaSoft"]
 license = "AGPL-3.0 license"
 readme = "README.md"
@@ -23,7 +23,7 @@ export AWS_ACCESS_KEY_ID=...
 export AWS_SECRET_ACCESS_KEY=...
 export AWS_REGION_NAME=...
 
-poetry run coverage-ai-full-repo \
+poetry run cover-agent-full-repo \
   --project-language="python" \
   --project-root="<path_to_your_repo>" \
   --code-coverage-report-path="<path_to_your_repo>/coverage.xml" \
@@ -33,7 +33,7 @@ poetry run coverage-ai-full-repo \
 
 Alternatively, if you dont want to use `poetry`, replace:
 
-`poetry run coverage-ai-full-repo`
+`poetry run cover-agent-full-repo`
 
 with:
 

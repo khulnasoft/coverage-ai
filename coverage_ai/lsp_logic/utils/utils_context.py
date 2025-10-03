@@ -17,7 +17,7 @@ async def analyze_context(test_file, context_files, args, ai_caller):
     # we now want to analyze the test file against the source files and determine several things:
     # 1. If this test file is a unit test file
     # 2. Which of the context files can be seen as the main source file for this test file, for which we want to increase coverage
-    # 3. Set all other context files as additional 'included_files' for the CoverageAi
+    # 3. Set all other context files as additional 'included_files' for the CoverAgent
     """
     source_file = None
     context_files_include = context_files

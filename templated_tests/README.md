@@ -1,5 +1,5 @@
 # Templated Tests
-A series of tests used to validate the Coverage Ai app under different languages and environments.
+A series of tests used to validate the Cover Agent app under different languages and environments.
 
 For more details see each subfolder for test projects.
 | Folder Name               | Language              |
