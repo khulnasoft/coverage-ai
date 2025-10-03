@@ -18,6 +18,8 @@
 
 
 ## News and Updates
+### 2025-10-3
+> **⚠️ This repository is no longer maintained. Please fork it if you wish to continue development or use it in your own projects.**
 
 ### 2024-06-05:
 The logic and prompts for adding new imports for the generated tests have been improved.
