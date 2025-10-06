@@ -41,30 +41,31 @@ class CustomLogger:
         logger = logging.getLogger(name)
         logger.setLevel(logging.DEBUG)
 
-        # Check if handlers are already set up to avoid adding them multiple times
-        if not logger.handlers:
-            formatter = logging.Formatter(
-                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-            )
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
 
-            # Only add file handler if file generation is enabled
-            if generate_log_files:
-                # Specify the log file path
-                log_file_path = (
-                    get_settings().get("default").get("log_file_path", "run.log")
-                )
-
-                # File handler for writing to a file. Use 'w' to overwrite the log file on each run
-                file_handler = logging.FileHandler(log_file_path, mode="w")
-                file_handler.setLevel(file_level)
-                file_handler.setFormatter(formatter)
-                logger.addHandler(file_handler)
-
-            # Stream handler for output to the console
+        # Ensure stream handler is present
+        if not any(isinstance(h, logging.StreamHandler) for h in logger.handlers):
             stream_handler = logging.StreamHandler()
             stream_handler.setLevel(console_level)
             stream_handler.setFormatter(formatter)
             logger.addHandler(stream_handler)
+
+        # Sync file handler state with generate_log_files flag
+        file_handlers = [
+            h for h in logger.handlers if isinstance(h, logging.FileHandler)
+        ]
+        if generate_log_files and not file_handlers:
+            log_file_path = get_settings().get("default").get("log_file_path", "run.log")
+            file_handler = logging.FileHandler(log_file_path, mode="w")
+            file_handler.setLevel(file_level)
+            file_handler.setFormatter(formatter)
+            logger.addHandler(file_handler)
+        elif not generate_log_files:
+            for handler in file_handlers:
+                logger.removeHandler(handler)
+                handler.close()
 
             # Prevent log messages from being propagated to the root logger
             logger.propagate = False
