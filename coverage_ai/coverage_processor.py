@@ -42,13 +42,15 @@ class CoverageProcessor:
         """
         self.file_path = file_path
         self.src_file_path = src_file_path
-        self.coverage_type = coverage_type
+        if isinstance(coverage_type, CoverageType):
+            self.coverage_type = coverage_type.value
+        else:
+            self.coverage_type = coverage_type
         self.logger = logger or CustomLogger.get_logger(
             __name__, generate_log_files=generate_log_files
         )
         self.use_report_coverage_feature_flag = use_report_coverage_feature_flag
         self.diff_coverage_report_path = diff_coverage_report_path
-
     def process_coverage_report(
         self, time_of_test_command: int
     ) -> Tuple[list, list, float]:
