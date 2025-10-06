@@ -65,7 +65,7 @@ def main():
             code_coverage_report_path=test.get(
                 "code_coverage_report_path", "coverage.xml"
             ),
-            model=args.model or test.get("model"),
+            model=test.get("model") or args.model or settings.get("model"),
             desired_coverage=test.get(
                 "desired_coverage", settings.get("desired_coverage")
             ),
