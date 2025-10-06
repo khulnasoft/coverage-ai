@@ -52,7 +52,7 @@ class DefaultAgentCompletion(AgentCompletionABC):
         """
         from jinja2 import Environment, StrictUndefined
 
-        environment = Environment(undefined=StrictUndefined)
+        environment = Environment(undefined=StrictUndefined, autoescape=True)
 
         try:
             # 1. Fetch the prompt config from your TOML-based settings
