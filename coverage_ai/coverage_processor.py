@@ -138,7 +138,7 @@ class CoverageProcessor:
             If filename is provided, returns (covered_lines, missed_lines, coverage_percent).
             If filename is None, returns a dict: { filename: (covered_lines, missed_lines, coverage_percent) }.
         """
-        tree = ET.parse(self.file_path)
+        tree = defusedxml.etree.ElementTree.parse(self.file_path)
         root = tree.getroot()
 
         if filename:
