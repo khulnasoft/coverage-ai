@@ -21,7 +21,7 @@ class AICallerReplay:
         self.source_file = source_file
         self.test_file = test_file
         self.record_replay_manager = record_replay_manager or RecordReplayManager(
-            record_mode=False
+            record_mode=False, generate_log_files=generate_log_files
         )
         self.logger = logger or CustomLogger.get_logger(
             __name__, generate_log_files=generate_log_files
