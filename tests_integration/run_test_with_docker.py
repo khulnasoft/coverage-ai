@@ -327,7 +327,7 @@ def log_test_args(test_args: argparse.Namespace, max_value_len=65) -> None:
 
     Args:
         test_args (argparse.Namespace): The arguments to be logged.
-        max_value_len (int): The maximum length of the value to be logged. Defaults to 60.
+        max_value_len (int): The maximum length of the value to be logged. Defaults to 65.
 
     Excludes:
         - "openai_api_key"
@@ -342,7 +342,6 @@ def log_test_args(test_args: argparse.Namespace, max_value_len=65) -> None:
         if len(value_str) > max_value_len:
             value_str = f"{value_str[:max_value_len]}..."
         logger.info(f"{key:35}: {value_str}")
-
 
 def parse_extra_args(settings: Dynaconf) -> argparse.Namespace:
     """
