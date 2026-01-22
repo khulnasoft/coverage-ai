@@ -92,12 +92,14 @@ class TestAICallerReplay:
             assert captured.out == "line1 \n\n\nline2 \n"
 
     @staticmethod
+    @staticmethod
     def test_stream_recorded_llm_response_handles_complex_whitespace_formatting(capsys):
         """
-        Tests that the `stream_recorded_llm_response` function handles complex whitespace formatting.
+        Tests that the `stream_recorded_llm_response` function handles complex whitespace and indentation.
 
         This test verifies that the function correctly processes input with varying levels of indentation
-        and trailing spaces, ensuring that each line is output with a trailing space and newline.
+        and trailing spaces, ensuring indentation is preserved and a trailing space and newline are appended
+        to each line.
 
         Args:
             capsys: A pytest fixture used to capture stdout and stderr during the test.
@@ -105,6 +107,7 @@ class TestAICallerReplay:
         Assertions:
             - The captured output matches the expected formatted content, preserving indentation
               and appending a trailing space and newline to each line.
+        """
         """
         content = "  indented\n    more\n      most  "
 
