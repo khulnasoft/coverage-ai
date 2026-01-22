@@ -227,15 +227,15 @@ jobs:
         
         # Test with multiple languages
         test_files = {
-            'test.py': '''
+            'test.py': """
 def hello_world():
     print('Hello, World!')
     
 class TestClass:
     def method(self):
         pass
-            ''',
-            'test.js': '''
+            """,
+            'test.js': """
 function helloWorld() {
     console.log('Hello, World!');
 }
@@ -243,10 +243,10 @@ function helloWorld() {
 class TestClass {
     method() {}
 }
-            ''',
-            'test.rs': '''
+            """,
+            'test.rs': """
 fn hello_world() {
-    println!(\"Hello, World!\");
+    println!("Hello, World!");
 }
 
 struct TestStruct {
@@ -256,7 +256,7 @@ struct TestStruct {
 impl TestStruct {
     fn method(&self) {}
 }
-            '''
+            """
         }
         
         with tempfile.TemporaryDirectory() as temp_dir:
