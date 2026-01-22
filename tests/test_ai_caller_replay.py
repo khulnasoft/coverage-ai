@@ -118,12 +118,12 @@ class TestAICallerReplay:
             assert captured.out == "  indented \n    more \n      most \n"
 
     @staticmethod
+    @staticmethod
     def test_stream_recorded_llm_response_handles_empty_input(capsys):
         """
-        Tests that the `stream_recorded_llm_response` function handles complex whitespace formatting.
+        Tests that the `stream_recorded_llm_response` function handles empty input.
 
-        This test verifies that the function correctly processes input with varying levels of indentation
-        and trailing spaces, ensuring that each line is output with a trailing space and newline.
+        This test verifies that the function produces no output when given an empty string as input.
 
         Args:
             capsys: A pytest fixture used to capture stdout and stderr during the test.
