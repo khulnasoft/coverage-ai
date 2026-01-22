@@ -292,8 +292,10 @@ def compose_test_command(test_args: argparse.Namespace) -> list:
         str(test_args.max_iterations),
         "--max-run-time-sec",
         str(test_args.max_run_time_sec),
-        "--strict-coverage",
     ]
+
+    if test_args.strict_coverage:
+        command.append("--strict-coverage")
 
     if test_args.model:
         command.extend(["--model", test_args.model])
