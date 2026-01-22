@@ -36,7 +36,7 @@ def mock_xml_tree(monkeypatch):
         root = ET.ElementTree(ET.fromstring(xml_str))
         return root
 
-    monkeypatch.setattr(ET, "parse", mock_parse)
+    monkeypatch.setattr("defusedxml.etree.ElementTree.parse", mock_parse)
 
 
 class TestCoverageProcessor:
