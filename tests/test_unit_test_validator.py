@@ -198,9 +198,8 @@ class TestUnitValidator:
                 fail_details["test_file_name"]
                 == mock_agent_completion_call_args["test_file_name"]
             )
-            assert (
-                fail_details["source_file_name"]
-                in mock_agent_completion_call_args["source_file_name"]
+            assert os.path.basename(fail_details["source_file_name"]) == os.path.basename(
+                mock_agent_completion_call_args["source_file_name"]
             )
             assert (
                 fail_details["source_file"]
