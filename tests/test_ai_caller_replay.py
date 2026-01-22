@@ -67,12 +67,13 @@ class TestAICallerReplay:
             assert captured.out == "root: \n  child: \n    item \n"
 
     @staticmethod
+    @staticmethod
     def test_stream_recorded_llm_response_handles_multiple_empty_lines(capsys):
         """
-        Tests that the `stream_recorded_llm_response` function preserves YAML indentation.
+        Tests that the `stream_recorded_llm_response` function handles multiple consecutive empty lines.
 
-        This test verifies that the function correctly outputs the provided YAML content
-        with proper indentation, appending a space and newline at the end of each line.
+        This test verifies that the function correctly preserves multiple empty lines in the output,
+        appending a space and newline at the end of each non-empty line.
 
         Args:
             capsys: A pytest fixture used to capture stdout and stderr during the test.
@@ -80,6 +81,7 @@ class TestAICallerReplay:
         Assertions:
             - The captured output matches the expected YAML content with preserved indentation
               and a trailing space and newline added to each line.
+        """
         """
         content = "line1\n\n\nline2"
 
