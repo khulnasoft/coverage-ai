@@ -7,17 +7,17 @@ TOML_FILES=$(shell find coverage_ai/settings -name "*.toml" | sed 's/.*/-\-add-d
 
 # Run unit tests with Pytest
 test:
-	poetry run pytest \
+	uv run pytest \
 		-m "not e2e_docker" \
 		--junitxml=testLog.xml \
 		--cov=coverage_ai \
 		--cov-report=xml:cobertura.xml \
 		--cov-report=term \
-		--cov-fail-under=65
+		--cov-fail-under=65 \
 		--log-cli-level=INFO
 
 e2e-test:
-	poetry run pytest \
+	uv run pytest \
 		-m "e2e_docker" \
 		--capture=no \
 		--junitxml=testLog_e2e.xml \
@@ -27,17 +27,17 @@ e2e-test:
 format:
 	black .
 
-# Generate wheel file using poetry build command
+# Generate wheel file using UV build command
 build:
-	poetry build
+	uv build
 
 # Initial global pip packages needed for running PyInstaller
 setup-installer:
-	pip install poetry wandb tree_sitter diff-cover
+	uv add --dev pyinstaller wandb tree_sitter diff-cover
 
 # Build an executable using Pyinstaller
 installer:
-	poetry run pyinstaller \
+	uv run pyinstaller \
 		--add-data "coverage_ai/version.txt:." \
 		$(TOML_FILES) \
 		--add-data "$(SITE_PACKAGES)/vendor:wandb/vendor" \

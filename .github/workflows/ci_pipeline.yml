@@ -40,21 +40,26 @@ jobs:
         with:
           python-version: '3.12'
       
-      # Step to cache Poetry dependencies
-      - name: Cache Poetry dependencies
+      # Step to cache UV dependencies
+      - name: Cache UV dependencies
         uses: actions/cache@v4
         with:
           path: |
-            ~/.cache/pypoetry
-            ~/.cache/pip
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+            ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
           restore-keys: |
-            ${{ runner.os }}-poetry-
-
-      - name: Install Poetry
-        run: pip install poetry
-      - name: Install dependencies using Poetry
-        run: poetry install
+            ${{ runner.os }}-uv-
+      
+      - name: Install UV
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+      
+      - name: Install dependencies using UV
+        run: |
+          uv sync --dev
+          uv pip install -e .
+      
       - name: Run tests and generate reports
         env:
           OPENAI_API_KEY: "This_is_a_fake_API_key"
@@ -102,8 +107,8 @@ jobs:
         run: poetry install
       - name: Build, Install and Test Package from Different Location
         run: |
-          poetry build
-          pip install dist/*.whl
+          uv build
+          uv pip install dist/*.whl
           cd /tmp
           cover-agent --help        
 
@@ -122,27 +127,38 @@ jobs:
       with:
         python-version: '3.12'
     
-    # Step to cache Poetry dependencies
-    - name: Cache Poetry dependencies
+    # Step to cache UV dependencies
+    - name: Cache UV dependencies
       uses: actions/cache@v4
       with:
         path: |
-          ~/.cache/pypoetry
-          ~/.cache/pip
-        key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          ~/.cache/uv
+        key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
         restore-keys: |
-          ${{ runner.os }}-poetry-
-
+          ${{ runner.os }}-uv-
+      
+    - name: Install UV
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+      
     - name: Install Dependencies
       run: |
-        make setup-installer
-        poetry install
+        uv sync --dev
+        uv pip install -e .
+      
     - name: Build Executable
-      run: make installer
+      run: |
+        uv build
+        uv pip install dist/*.whl
+        cd /tmp
+        cover-agent --help
+      
     - name: Test Executable (Windows)
       if: ${{ matrix.os == 'windows-latest' }}
       run: .\dist\cover-agent.exe --help
       shell: pwsh
+      
     - name: Test Executable (Unix)
       if: ${{ matrix.os != 'windows-latest' }}
       run: ./dist/cover-agent --help

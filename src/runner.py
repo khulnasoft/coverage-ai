@@ -1,12 +1,10 @@
 import subprocess
 import time
+from typing import Optional
 
 
 class Runner:
     @staticmethod
- import subprocess
- import time
-from typing import Optional
 
     def run_command(command: str, max_run_time_sec: int, cwd: Optional[str] = None):
         """

@@ -3,6 +3,7 @@ import json
 import os
 import re
 import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as SafeET
 
 from typing import List, Optional, Tuple, Union
 
@@ -140,7 +141,7 @@ class CoverageProcessor:
             If filename is provided, returns (covered_lines, missed_lines, coverage_percent).
             If filename is None, returns a dict: { filename: (covered_lines, missed_lines, coverage_percent) }.
         """
-        tree = defusedxml.etree.ElementTree.parse(self.file_path)
+        tree = SafeET.parse(self.file_path)
         root = tree.getroot()
 
         if filename:

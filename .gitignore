@@ -46,10 +46,17 @@ __pycache__/
 # C extensions
 *.so
 
+# UV package manager
+.uv/
+.venv/
+uv.lock
+
+# Poetry (legacy - can be removed if fully migrated)
+poetry.lock
+
 # Distribution / packaging
 .Python
 env/
-venv/
 pyvenv.cfg
 pip-log.txt
 pip-delete-this-directory.txt

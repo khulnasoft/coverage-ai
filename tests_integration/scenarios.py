@@ -105,4 +105,77 @@ TESTS = [
         "test_command": r"npm run test",
         "code_coverage_report_path": "coverage/cobertura-coverage.xml",
     },
+    # Rust CLI Example
+    {
+        "docker_image": "embeddeddevops/rust_cli:latest",
+        "source_file_path": "src/main.rs",
+        "test_file_path": "src/main.rs",
+        "test_command": r"cargo test",
+        "code_coverage_report_path": "target/coverage/tarpaulin/cobertura-coverage.xml",
+        "coverage_type": CoverageType.COBERTURA.value,
+        "max_iterations": 4,
+        "desired_coverage": 60,
+    },
+    # Svelte Calculator Example
+    {
+        "docker_image": "embeddeddevops/svelte_calculator:latest",
+        "source_file_path": "src/lib/components/Calculator.svelte",
+        "test_file_path": "src/lib/utils/calculator.test.js",
+        "test_command": r"npm run test:coverage",
+        "code_coverage_report_path": "coverage/cobertura-coverage.xml",
+        "max_iterations": 4,
+        "desired_coverage": 55,
+    },
+    # Vue Calculator Example
+    {
+        "docker_image": "embeddeddevops/vue_calculator:latest",
+        "source_file_path": "src/components/Calculator.vue",
+        "test_file_path": "src/utils/calculator.test.js",
+        "test_command": r"npm run test:coverage",
+        "code_coverage_report_path": "coverage/cobertura-coverage.xml",
+        "max_iterations": 4,
+        "desired_coverage": 55,
+    },
+    # Flutter Calculator Example
+    {
+        "docker_image": "embeddeddevops/flutter_calculator:latest",
+        "source_file_path": "lib/calculator.dart",
+        "test_file_path": "test/calculator_test.dart",
+        "test_command": r"flutter test --coverage",
+        "code_coverage_report_path": "coverage/lcov.info",
+        "coverage_type": CoverageType.LCOV.value,
+        "max_iterations": 4,
+        "desired_coverage": 60,
+    },
+    # Haskell Calculator Example
+    {
+        "docker_image": "embeddeddevops/haskell_calc:latest",
+        "source_file_path": "src/Lib.hs",
+        "test_file_path": "test/LibSpec.hs",
+        "test_command": r"cabal test --test-show-details=direct",
+        "code_coverage_report_path": "tix/haskell_calc.tix",
+        "coverage_type": CoverageType.HPC.value,
+        "max_iterations": 4,
+        "desired_coverage": 55,
+    },
+    # Python FastAPI ML Example
+    {
+        "docker_image": "embeddeddevops/python_fastapi_ml:latest",
+        "source_file_path": "app.py",
+        "test_file_path": "test_app.py",
+        "test_command": r"pytest --cov=app --cov-report=xml --cov-report=term",
+        "code_coverage_report_path": "coverage.xml",
+        "max_iterations": 4,
+        "desired_coverage": 65,
+    },
+    # Docker Demo Example
+    {
+        "docker_image": "embeddeddevops/docker_demo:latest",
+        "source_file_path": "server.js",
+        "test_file_path": "test/server.test.js",
+        "test_command": r"npm run test:coverage",
+        "code_coverage_report_path": "coverage/cobertura-coverage.xml",
+        "max_iterations": 4,
+        "desired_coverage": 55,
+    },
 ]

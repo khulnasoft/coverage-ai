@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docker Demo Application</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐳 Docker Demo Application</h1>
+            <p>A containerized web application for testing</p>
+        </header>
+        
+        <main>
+            <section class="info-section">
+                <h2>Application Information</h2>
+                <div id="app-info">
+                    <p>Loading...</p>
+                </div>
+            </section>
+            
+            <section class="features-section">
+                <h2>Features Demonstrated</h2>
+                <ul>
+                    <li>✅ Multi-stage Docker builds</li>
+                    <li>✅ Nginx reverse proxy</li>
+                    <li>✅ Health checks</li>
+                    <li>✅ Environment variables</li>
+                    <li>✅ Static file serving</li>
+                    <li>✅ REST API endpoints</li>
+                    <li>✅ Container orchestration ready</li>
+                </ul>
+            </section>
+            
+            <section class="test-section">
+                <h2>Test Endpoints</h2>
+                <button onclick="testHealth()">Test Health Endpoint</button>
+                <div id="test-result"></div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>&copy; 2023 Coverage AI - Docker Demo</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Load application information
+        fetch('/api/health')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('app-info').innerHTML = `
+                    <p><strong>Status:</strong> ${data.status}</p>
+                    <p><strong>Timestamp:</strong> ${new Date(data.timestamp).toLocaleString()}</p>
+                    <p><strong>Container:</strong> ${data.container}</p>
+                `;
+            })
+            .catch(error => {
+                document.getElementById('app-info').innerHTML = `
+                    <p><strong>Error:</strong> ${error.message}</p>
+                `;
+            });
+        
+        // Test health endpoint
+        function testHealth() {
+            const resultDiv = document.getElementById('test-result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            fetch('/api/health')
+                .then(response => response.json())
+                .then(data => {
+                    resultDiv.innerHTML = `
+                        <p><strong>✅ Success!</strong></p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = `
+                        <p><strong>❌ Error:</strong> ${error.message}</p>
+                    `;
+                });
+        }
+    </script>
+</body>
+</html>

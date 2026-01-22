@@ -1,0 +1,346 @@
+name: Query Validation and Performance Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'coverage_ai/lsp_logic/file_map/queries/**'
+      - 'tests/test_get_queries.py'
+      - 'benchmark_queries.py'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'coverage_ai/lsp_logic/file_map/queries/**'
+      - 'tests/test_get_queries.py'
+      - 'benchmark_queries.py'
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  test-query-loading:
+    runs-on: ubuntu-latest
+    name: Test Query Loading
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install pytest pytest-cov
+        
+    - name: Run query loading tests
+      run: |
+        python -m pytest tests/test_get_queries.py -v --cov=coverage_ai.lsp_logic.file_map.queries --cov-report=xml
+        
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+
+  performance-benchmark:
+    runs-on: ubuntu-latest
+    name: Performance Benchmark
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        
+    - name: Run performance benchmark
+      run: |
+        python benchmark_queries.py > benchmark_results.txt
+        
+    - name: Parse benchmark results
+      id: parse
+      run: |
+        # Extract key metrics from benchmark output
+        TOTAL_TIME=$(grep "Total loading time:" benchmark_results.txt | awk '{print $4}')
+        AVG_TIME=$(grep "Average per language:" benchmark_results.txt | awk '{print $4}')
+        LANG_COUNT=$(grep "Total languages:" benchmark_results.txt | awk '{print $3}')
+        PERF_RATING=$(grep "Overall performance:" benchmark_results.txt | awk '{print $3}')
+        
+        echo "total_time=$TOTAL_TIME" >> $GITHUB_OUTPUT
+        echo "avg_time=$AVG_TIME" >> $GITHUB_OUTPUT
+        echo "lang_count=$LANG_COUNT" >> $GITHUB_OUTPUT
+        echo "perf_rating=$PERF_RATING" >> $GITHUB_OUTPUT
+        
+        # Display results
+        echo "## 📊 Performance Benchmark Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+        echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Languages Supported | $LANG_COUNT |" >> $GITHUB_STEP_SUMMARY
+        echo "| Total Loading Time | ${TOTAL_TIME}ms |" >> $GITHUB_STEP_SUMMARY
+        echo "| Average per Language | ${AVG_TIME}ms |" >> $GITHUB_STEP_SUMMARY
+        echo "| Performance Rating | $PERF_RATING |" >> $GITHUB_STEP_SUMMARY
+        
+    - name: Performance regression check
+      run: |
+        # Define performance thresholds
+        MAX_TOTAL_TIME=10  # ms
+        MAX_AVG_TIME=0.5   # ms
+        MIN_LANG_COUNT=35   # languages
+        
+        TOTAL_TIME=${{ steps.parse.outputs.total_time }}
+        AVG_TIME=${{ steps.parse.outputs.avg_time }}
+        LANG_COUNT=${{ steps.parse.outputs.lang_count }}
+        
+        # Check thresholds
+        if (( $(echo "$TOTAL_TIME > $MAX_TOTAL_TIME" | bc -l) )); then
+          echo "❌ Performance regression: Total loading time ${TOTAL_TIME}ms exceeds threshold ${MAX_TOTAL_TIME}ms"
+          exit 1
+        fi
+        
+        if (( $(echo "$AVG_TIME > $MAX_AVG_TIME" | bc -l) )); then
+          echo "❌ Performance regression: Average time ${AVG_TIME}ms exceeds threshold ${MAX_AVG_TIME}ms"
+          exit 1
+        fi
+        
+        if [ "$LANG_COUNT" -lt "$MIN_LANG_COUNT" ]; then
+          echo "❌ Language count regression: $LANG_COUNT languages below minimum $MIN_LANG_COUNT"
+          exit 1
+        fi
+        
+        echo "✅ All performance checks passed!"
+
+  query-syntax-validation:
+    runs-on: ubuntu-latest
+    name: Query Syntax Validation
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        
+    - name: Validate query file syntax
+      run: |
+        python -c "
+        import os
+        from pathlib import Path
+        
+        queries_dir = Path('coverage_ai/lsp_logic/file_map/queries')
+        errors = []
+        
+        for query_file in queries_dir.glob('*.scm'):
+            try:
+                with open(query_file, 'r') as f:
+                    content = f.read()
+                
+                # Basic syntax checks
+                if not content.strip():
+                    errors.append(f'{query_file.name}: Empty file')
+                    continue
+                
+                # Check for common query patterns
+                if '@name.definition.' not in content and '@name.reference.' not in content:
+                    errors.append(f'{query_file.name}: No definition or reference patterns found')
+                
+                # Check for balanced parentheses (basic check)
+                open_parens = content.count('(')
+                close_parens = content.count(')')
+                if open_parens != close_parens:
+                    errors.append(f'{query_file.name}: Unbalanced parentheses')
+                
+            except Exception as e:
+                errors.append(f'{query_file.name}: {str(e)}')
+        
+        if errors:
+            print('❌ Query syntax validation failed:')
+            for error in errors:
+                print(f'  - {error}')
+            exit(1)
+        else:
+            print('✅ All query files passed syntax validation')
+        "
+
+  integration-test:
+    runs-on: ubuntu-latest
+    name: Integration Test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install pytest
+        
+    - name: Test FileMap integration
+      run: |
+        python -c "
+        import tempfile
+        import os
+        from pathlib import Path
+        from coverage_ai.lsp_logic.file_map.file_map import FileMap
+        
+        # Test with multiple languages
+        test_files = {
+            'test.py': '''
+def hello_world():
+    print('Hello, World!')
+    
+class TestClass:
+    def method(self):
+        pass
+            ''',
+            'test.js': '''
+function helloWorld() {
+    console.log('Hello, World!');
+}
+
+class TestClass {
+    method() {}
+}
+            ''',
+            'test.rs': '''
+fn hello_world() {
+    println!(\"Hello, World!\");
+}
+
+struct TestStruct {
+    field: i32,
+}
+
+impl TestStruct {
+    fn method(&self) {}
+}
+            '''
+        }
+        
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            results = []
+            
+            for filename, content in test_files.items():
+                file_path = temp_path / filename
+                file_path.write_text(content)
+                
+                try:
+                    filemap = FileMap(str(file_path))
+                    summary = filemap.summarize()
+                    results.append(f'{filename}: ✅ Success')
+                except Exception as e:
+                    results.append(f'{filename}: ❌ Failed - {e}')
+            
+            for result in results:
+                print(result)
+            
+            failed = sum(1 for r in results if '❌' in r)
+            if failed > 0:
+                print(f'\\n❌ {failed} integration tests failed')
+                exit(1)
+            else:
+                print('\\n✅ All integration tests passed')
+        "
+
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security Scan
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run Bandit Security Scan
+      run: |
+        pip install bandit
+        bandit -r coverage_ai/lsp_logic/file_map/ -f json -o bandit-report.json || true
+        bandit -r coverage_ai/lsp_logic/file_map/
+        
+    - name: Check for hardcoded secrets
+      run: |
+        # Basic secret scanning in query files
+        if grep -r -i "password\|secret\|token\|key" coverage_ai/lsp_logic/file_map/queries/; then
+          echo "❌ Potential hardcoded secrets found in query files"
+          exit 1
+        else
+          echo "✅ No hardcoded secrets found"
+        fi
+
+  notify-results:
+    runs-on: ubuntu-latest
+    name: Notify Results
+    needs: [test-query-loading, performance-benchmark, query-syntax-validation, integration-test, security-scan]
+    if: always()
+    
+    steps:
+    - name: Create summary
+      run: |
+        echo "## 🚀 Query Validation Pipeline Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # Check each job status
+        test_result="${{ needs.test-query-loading.result }}"
+        perf_result="${{ needs.performance-benchmark.result }}"
+        syntax_result="${{ needs.query-syntax-validation.result }}"
+        integration_result="${{ needs.integration-test.result }}"
+        security_result="${{ needs.security-scan.result }}"
+        
+        echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Query Loading Tests | $test_result |" >> $GITHUB_STEP_SUMMARY
+        echo "| Performance Benchmark | $perf_result |" >> $GITHUB_STEP_SUMMARY
+        echo "| Syntax Validation | $syntax_result |" >> $GITHUB_STEP_SUMMARY
+        echo "| Integration Tests | $integration_result |" >> $GITHUB_STEP_SUMMARY
+        echo "| Security Scan | $security_result |" >> $GITHUB_STEP_SUMMARY
+        
+        # Overall status
+        if [[ "$test_result" == "success" && "$perf_result" == "success" && "$syntax_result" == "success" && "$integration_result" == "success" && "$security_result" == "success" ]]; then
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🎉 **All checks passed!** The tree-sitter query system is working correctly." >> $GITHUB_STEP_SUMMARY
+        else
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ **Some checks failed.** Please review the job logs for details." >> $GITHUB_STEP_SUMMARY
+        fi

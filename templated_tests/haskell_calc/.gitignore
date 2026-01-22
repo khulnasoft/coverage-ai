@@ -1,0 +1,16 @@
+dist/
+dist-newstyle/
+*.o
+*.hi
+*.prof
+*.aux
+*.hp
+*.ps
+*.pdf
+*.dvi
+*.log
+.cabal-sandbox/
+cabal.sandbox.config
+.ghc.environment.*
+.stack-work/
+*.tix

@@ -35,7 +35,7 @@ class Args:
         self.test_file_path = test_file_path
         self.test_file_output_path = ""
         self.code_coverage_report_path = "coverage.xml"
-        self.test_command = f"poetry run pytest --cov=coverage_ai --cov-report=xml  --timeout=30 --disable-warnings"
+        self.test_command = "uv run pytest --cov=coverage_ai --cov-report=xml --timeout=30 --disable-warnings"
         self.test_command_dir = os.getcwd()
         self.included_files = None
         self.coverage_type = "cobertura"

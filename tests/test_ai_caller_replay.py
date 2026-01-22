@@ -92,7 +92,6 @@ class TestAICallerReplay:
             assert captured.out == "line1 \n\n\nline2 \n"
 
     @staticmethod
-    @staticmethod
     def test_stream_recorded_llm_response_handles_complex_whitespace_formatting(capsys):
         """
         Tests that the `stream_recorded_llm_response` function handles complex whitespace and indentation.

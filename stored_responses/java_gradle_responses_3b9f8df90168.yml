@@ -213,11 +213,11 @@ generate_tests:
       \ 2)\n\n        then:\n        assert result == 5.0\n    }\n  new_imports_code:\
       \ |\n    \"\"\n  test_tags: happy path\n\n- test_behavior: |\n    Test that\
       \ the fibonacci method returns the correct result for a base case (n = 0).\n\
-      \  lines_to_cover: |\n    [24, 25, 26]\n  test_name: |\n    test_fibonacci_base_case_zero\n\
+      \  lines_to_cover: |\n    [24, 25, 26, 28, 29]\n  test_name: |\n    test_fibonacci_recursive_case\n\
       \  test_code: |\n    def \"should return correct result for fibonacci base case\
       \ n = 0\"() {\n        given:\n        SimpleMathOperations operations = new\
-      \ SimpleMathOperations()\n\n        when:\n        int result = operations.fibonacci(0)\n\
-      \n        then:\n        assert result == 0\n    }\n  new_imports_code: |\n\
+      \ SimpleMathOperations()\n\n        when:\n        int result = operations.fibonacci(5)\n\
+      \n        then:\n        assert result == 5\n    }\n  new_imports_code: |\n\
       \    \"\"\n  test_tags: edge case\n```"
     prompt_tokens: 1296
     completion_tokens: 554

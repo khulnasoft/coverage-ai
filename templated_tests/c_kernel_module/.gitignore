@@ -1,0 +1,12 @@
+*.ko
+*.mod
+*.mod.c
+*.o
+*.order
+*.symvers
+Module.symvers
+modules.order
+test_kernel_module
+*.gcda
+*.gcno
+*.gcov

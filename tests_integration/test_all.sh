@@ -167,3 +167,97 @@ sh tests_integration/test_with_docker.sh \
   --model $MODEL \
   $log_db_arg \
   $SUPPRESS_LOG_FILES
+
+# Rust CLI Example
+sh tests_integration/test_with_docker.sh \
+  --docker-image "embeddeddevops/rust_cli:latest" \
+  --source-file-path "src/main.rs" \
+  --test-file-path "src/main.rs" \
+  --test-command "cargo test" \
+  --code-coverage-report-path "target/coverage/tarpaulin/cobertura-coverage.xml" \
+  --coverage-type "cobertura" \
+  --max-iterations "4" \
+  --desired-coverage "60" \
+  --model $MODEL \
+  $log_db_arg \
+  $SUPPRESS_LOG_FILES
+
+# Svelte Calculator Example
+sh tests_integration/test_with_docker.sh \
+  --docker-image "embeddeddevops/svelte_calculator:latest" \
+  --source-file-path "src/lib/components/Calculator.svelte" \
+  --test-file-path "src/lib/utils/calculator.test.js" \
+  --test-command "npm run test:coverage" \
+  --code-coverage-report-path "coverage/cobertura-coverage.xml" \
+  --max-iterations "4" \
+  --desired-coverage "55" \
+  --model $MODEL \
+  $log_db_arg \
+  $SUPPRESS_LOG_FILES
+
+# Vue Calculator Example
+sh tests_integration/test_with_docker.sh \
+  --docker-image "embeddeddevops/vue_calculator:latest" \
+  --source-file-path "src/components/Calculator.vue" \
+  --test-file-path "src/utils/calculator.test.js" \
+  --test-command "npm run test:coverage" \
+  --code-coverage-report-path "coverage/cobertura-coverage.xml" \
+  --max-iterations "4" \
+  --desired-coverage "55" \
+  --model $MODEL \
+  $log_db_arg \
+  $SUPPRESS_LOG_FILES
+
+# Flutter Calculator Example
+sh tests_integration/test_with_docker.sh \
+  --docker-image "embeddeddevops/flutter_calculator:latest" \
+  --source-file-path "lib/calculator.dart" \
+  --test-file-path "test/calculator_test.dart" \
+  --test-command "flutter test --coverage" \
+  --code-coverage-report-path "coverage/lcov.info" \
+  --coverage-type "lcov" \
+  --max-iterations "4" \
+  --desired-coverage "60" \
+  --model $MODEL \
+  $log_db_arg \
+  $SUPPRESS_LOG_FILES
+
+# Haskell Calculator Example
+sh tests_integration/test_with_docker.sh \
+  --docker-image "embeddeddevops/haskell_calc:latest" \
+  --source-file-path "src/Lib.hs" \
+  --test-file-path "test/LibSpec.hs" \
+  --test-command "cabal test --test-show-details=direct" \
+  --code-coverage-report-path "tix/haskell_calc.tix" \
+  --coverage-type "hpc" \
+  --max-iterations "4" \
+  --desired-coverage "55" \
+  --model $MODEL \
+  $log_db_arg \
+  $SUPPRESS_LOG_FILES
+
+# Python FastAPI ML Example
+sh tests_integration/test_with_docker.sh \
+  --docker-image "embeddeddevops/python_fastapi_ml:latest" \
+  --source-file-path "app.py" \
+  --test-file-path "test_app.py" \
+  --test-command "pytest --cov=app --cov-report=xml --cov-report=term" \
+  --code-coverage-report-path "coverage.xml" \
+  --max-iterations "4" \
+  --desired-coverage "65" \
+  --model $MODEL \
+  $log_db_arg \
+  $SUPPRESS_LOG_FILES
+
+# Docker Demo Example
+sh tests_integration/test_with_docker.sh \
+  --docker-image "embeddeddevops/docker_demo:latest" \
+  --source-file-path "server.js" \
+  --test-file-path "test/server.test.js" \
+  --test-command "npm run test:coverage" \
+  --code-coverage-report-path "coverage/cobertura-coverage.xml" \
+  --max-iterations "4" \
+  --desired-coverage "55" \
+  --model $MODEL \
+  $log_db_arg \
+  $SUPPRESS_LOG_FILES

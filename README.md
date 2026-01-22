@@ -70,6 +70,50 @@ If running directly from the repository you will also need:
 - Python installed on your system.
 - Poetry installed for managing Python package dependencies. Installation instructions for Poetry can be found at [https://python-poetry.org/docs/](https://python-poetry.org/docs/).
 
+### Development
+
+### Setting up the development environment
+
+Option 1: Using UV (Recommended, Ultra-fast)
+```bash
+# Install UV
+pip install uv
+
+# Clone and setup
+git clone https://github.com/KhulnaSoft/cover-agent.git
+cd cover-agent
+
+# Install dependencies
+uv sync --dev
+
+# Run tests
+uv run pytest --cov=coverage_ai --cov-report=xml --cov-report=term
+
+# Run the agent
+uv run cover-agent --help
+```
+
+Option 2: Using Poetry (Legacy)
+```bash
+# Install Poetry
+pip install poetry
+
+# Clone and setup
+git clone https://github.com/KhulnaSoft/cover-agent.git
+cd cover-agent
+
+# Install dependencies
+poetry install
+
+# Run tests
+poetry run pytest --cov=coverage_ai --cov-report=xml --cov-report=term
+
+# Run the agent
+poetry run cover-agent --help
+```
+
+> **Note**: UV is 10-100x faster than Poetry for dependency installation and resolution. See [UV Migration Guide](docs/UV_MIGRATION_GUIDE.md) for details.
+
 ### Standalone Runtime
 Khulnasoft Cover can be installed as a Python Pip package or run as a standalone executable.
 
