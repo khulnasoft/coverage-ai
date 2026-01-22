@@ -191,7 +191,10 @@ class CoverAgentConfig:
         # CLI overrides default settings
         merged_dict = default_dict.copy()
         for k, v in args_dict.items():
-            if v is not None and hasattr(args, k):
-                merged_dict[k] = v
-
+            if not hasattr(args, k) or v is None:
+                continue
+            if isinstance(v, bool) and not v:
+                # `store_true` defaults to False when the flag is absent; keep config value.
+                continue
+            merged_dict[k] = v
         return cls(**merged_dict)
