@@ -1,4 +1,0 @@
-[console_scripts]
-cover-agent = coverage_ai.main:main
-cover-agent-full-repo = coverage_ai.main_full_repo:main
-generate-report = coverage_ai.UnitTestDB:dump_to_report_cli

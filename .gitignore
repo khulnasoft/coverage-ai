@@ -61,6 +61,7 @@ pyvenv.cfg
 pip-log.txt
 pip-delete-this-directory.txt
 *.spec
+cover_agent.egg-info/
 
 # Other
 wandb/
