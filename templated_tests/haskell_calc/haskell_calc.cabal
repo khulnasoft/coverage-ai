@@ -1,0 +1,57 @@
+cabal-version: 2.2
+name:          haskell_calc
+version:       0.1.0.0
+synopsis:      A simple command-line calculator in Haskell
+description:   Please see the README on GitHub at <https://github.com/githubuser/haskell_calc#readme>
+category:      CLI
+homepage:      https://github.com/githubuser/haskell_calc#readme
+bug-reports:   https://github.com/githubuser/haskell_calc/issues
+author:        Coverage AI
+maintainer:    example@example.com
+copyright:     2023 Coverage AI
+license:       BSD-3-Clause
+license-file:  LICENSE
+build-type:    Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/haskell_calc
+
+library
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_haskell_calc
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      base >=4.7 && <5
+
+executable haskell_calc-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_haskell_calc
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , haskell_calc
+
+test-suite haskell_calc-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      LibSpec
+      Paths_haskell_calc
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , haskell_calc
+    , hspec

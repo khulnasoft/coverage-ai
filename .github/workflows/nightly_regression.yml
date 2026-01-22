@@ -2,6 +2,7 @@ name: Nightly Integration Tests
 
 # Define the events that will trigger this workflow
 on:
+  # Allow manual triggering of the workflow
   workflow_dispatch:
 
 jobs:
@@ -27,15 +28,15 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        pip install poetry wandb tree_sitter diff-cover
+        make setup-installer
         poetry install
     - name: Build Executable
       run: make installer
     - name: Upload Executable
       uses: actions/upload-artifact@v4
       with:
-        name: coverage-ai
-        path: dist/coverage-ai*
+        name: cover-agent
+        path: dist/cover-agent*
 
   run-integration-tests:
     needs: build-executable
@@ -56,14 +57,14 @@ jobs:
     - name: Download artifact
       uses: actions/download-artifact@v4
       with:
-        name: coverage-ai
+        name: cover-agent
         path: dist/
 
     # Step 3: Run integration tests
     - name: Run integration tests
       run: |
-        # Set permissions for dist/coverage-ai
-        chmod +x dist/coverage-ai
+        # Set permissions for dist/cover-agent
+        chmod +x dist/cover-agent
 
         # Install bash
         apk add --no-cache bash

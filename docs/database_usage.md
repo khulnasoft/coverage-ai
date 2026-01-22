@@ -1,4 +1,4 @@
-# Using a Test Database with Coverage Ai
+# Using a Test Database with Cover Agent
 Note: This feature is still in beta
 
 ## Requirements
@@ -10,9 +10,9 @@ touch run_tests.db
 ```
 
 ## Running with an external DB
-You can run Coverage Ai using the `--log-db-path` option. For example:
+You can run Cover Agent using the `--log-db-path` option. For example:
 ```
-coverage-ai \
+cover-agent \
   --source-file-path "templated_tests/python_fastapi/app.py" \
   --test-file-path "templated_tests/python_fastapi/test_app.py" \
   --code-coverage-report-path "templated_tests/python_fastapi/coverage.xml" \
@@ -21,10 +21,11 @@ coverage-ai \
   --coverage-type "cobertura" \
   --desired-coverage 70 \
   --max-iterations 10 \
+  --suppress-log-files \
   --log-db-path "run_tests.db"
 ```
 
-Coverage Ai will create a table called `unit_test_generation_attempts` within the database.
+Cover Agent will create a table called `unit_test_generation_attempts` within the database.
 
 ## Integration Tests
 You can run the integration test suite and pass in the local `.db` to each Docker container with the following (example) command at the root of this repository:

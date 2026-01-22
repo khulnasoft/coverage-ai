@@ -1,4 +1,4 @@
-# Coverage Ai Feature Flags
+# Cover Agent Feature Flags
 
 ## Features Overview
 

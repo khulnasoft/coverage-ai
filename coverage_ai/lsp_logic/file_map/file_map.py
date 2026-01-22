@@ -14,7 +14,7 @@ from coverage_ai.lsp_logic.file_map.queries.get_queries import get_queries_schem
 class FileMap:
     """
     This class is used to summarize the content of a file using tree-sitter queries.
-    Supported languages: C, C++, C#, elisp, elixir, go, java, javascript, ocaml, php, python, ql, ruby, rust, typescript
+    Supported languages: Arduino, C, C++, C#, Chatito, Clojure, Common Lisp, D, Dart, Elisp, Elixir, Elm, Fortran, Gleam, Go, Haskell, HCL, Java, JavaScript, Julia, Kotlin, Lua, MATLAB, OCaml, PHP, Pony, Properties, Python, QL, R, Racket, Ruby, Rust, Scala, Solidity, Swift, TypeScript, Udev, Zig
     """
 
     def __init__(

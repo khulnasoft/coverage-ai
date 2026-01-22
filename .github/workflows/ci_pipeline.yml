@@ -40,33 +40,38 @@ jobs:
         with:
           python-version: '3.12'
       
-      # Step to cache Poetry dependencies
-      - name: Cache Poetry dependencies
-        uses: actions/cache@v2
+      # Step to cache UV dependencies
+      - name: Cache UV dependencies
+        uses: actions/cache@v4
         with:
           path: |
-            ~/.cache/pypoetry
-            ~/.cache/pip
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+            ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
           restore-keys: |
-            ${{ runner.os }}-poetry-
-
-      - name: Install Poetry
-        run: pip install poetry
-      - name: Install dependencies using Poetry
-        run: poetry install
+            ${{ runner.os }}-uv-
+      
+      - name: Install UV
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+      
+      - name: Install dependencies using UV
+        run: |
+          uv sync --dev
+          uv pip install -e .
+      
       - name: Run tests and generate reports
         env:
           OPENAI_API_KEY: "This_is_a_fake_API_key"
         run: make test
       - name: Upload test report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-reports
           path: testLog.xml
       - name: Upload coverage report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: coverage-reports
@@ -87,7 +92,7 @@ jobs:
       
       # Step to cache Poetry dependencies
       - name: Cache Poetry dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cache/pypoetry
@@ -102,10 +107,10 @@ jobs:
         run: poetry install
       - name: Build, Install and Test Package from Different Location
         run: |
-          poetry build
-          pip install dist/*.whl
+          uv build
+          uv pip install dist/*.whl
           cd /tmp
-          coverage-ai --help        
+          cover-agent --help        
 
   build:
     needs: [test, changes]
@@ -122,59 +127,129 @@ jobs:
       with:
         python-version: '3.12'
     
-    # Step to cache Poetry dependencies
-    - name: Cache Poetry dependencies
-      uses: actions/cache@v2
+    # Step to cache UV dependencies
+    - name: Cache UV dependencies
+      uses: actions/cache@v4
       with:
         path: |
-          ~/.cache/pypoetry
-          ~/.cache/pip
-        key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          ~/.cache/uv
+        key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
         restore-keys: |
-          ${{ runner.os }}-poetry-
-
+          ${{ runner.os }}-uv-
+      
+    - name: Install UV
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+      
     - name: Install Dependencies
       run: |
-        pip install poetry wandb tree_sitter diff-cover
-        poetry install
+        uv sync --dev
+        uv pip install -e .
+      
     - name: Build Executable
-      run: make installer
+      run: |
+        uv build
+        uv pip install dist/*.whl
+        cd /tmp
+        cover-agent --help
+      
     - name: Test Executable (Windows)
       if: ${{ matrix.os == 'windows-latest' }}
-      run: .\dist\coverage-ai.exe --help
+      run: .\dist\cover-agent.exe --help
       shell: pwsh
+      
     - name: Test Executable (Unix)
       if: ${{ matrix.os != 'windows-latest' }}
-      run: ./dist/coverage-ai --help
+      run: ./dist/cover-agent --help
       shell: bash
     - name: Upload Executable
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: coverage-ai-${{ matrix.os }}
-        path: dist/coverage-ai*
+        name: cover-agent-${{ matrix.os }}
+        path: dist/cover-agent*
+
+  e2e-test:
+    # This job will run after building binary because it needs the binary to run the E2E tests in Docker
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
+
+      # Download the Ubuntu binary
+      - name: Download Ubuntu executable
+        uses: actions/download-artifact@v4
+        with:
+          name: cover-agent-ubuntu-22.04
+          path: dist
+
+      # Make the binary executable
+      - name: Make binary executable
+        run: chmod +x dist/cover-agent
+
+      # Cache and install dependencies
+      - name: Cache Poetry dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pypoetry
+            ~/.cache/pip
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install dependencies using Poetry
+        run: poetry install
+
+      # Run the E2E Docker tests using the Makefile target `e2e-test`
+      - name: Run E2E Docker tests
+        env:
+          OPENAI_API_KEY: "This_is_a_fake_API_key"
+        run: |
+          make e2e-test 2>&1 | tee e2e_test_full.log
+
+      # Upload E2E test reports
+      - name: Upload E2E Docker test report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-test-reports
+          path: |
+            testLog_e2e.xml
+            e2e_test_full.log
 
   release:
     # This job will run only if the following conditions are met:
     # - The event is a 'push' to the 'main' branch
     # - The 'version.txt' file has changed
-    # - There are relevant changes outside of 'README.md' and the 'docs/' folder
-    needs: [build, changes]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.version_changed == 'true' && needs.changes.outputs.relevant_changes == 'true'
+    # - There are relevant changes outside 'README.md' and the 'docs/' folder
+    needs: [build, changes, e2e-test]
+    if: >
+      github.event_name == 'push' && 
+      github.ref == 'refs/heads/main' &&
+      needs.changes.outputs.version_changed == 'true' &&
+      needs.changes.outputs.relevant_changes == 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: Download executables (Ubuntu)
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
-        name: coverage-ai-ubuntu-22.04
+        name: cover-agent-ubuntu-22.04
         path: dist/ubuntu-22.04
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
-        name: coverage-ai-windows-latest
+        name: cover-agent-windows-latest
         path: dist/windows-latest
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
-        name: coverage-ai-macos-latest
+        name: cover-agent-macos-latest
         path: dist/macos-latest
     - name: Extract version
       run: |
@@ -195,8 +270,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist/ubuntu-22.04/coverage-ai
-        asset_name: coverage-ai-ubuntu
+        asset_path: dist/ubuntu-22.04/cover-agent
+        asset_name: cover-agent-ubuntu
         asset_content_type: application/octet-stream
     - name: Upload Release Asset (Windows)
       uses: actions/upload-release-asset@v1
@@ -204,8 +279,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist/windows-latest/coverage-ai.exe
-        asset_name: coverage-ai-windows.exe
+        asset_path: dist/windows-latest/cover-agent.exe
+        asset_name: cover-agent-windows.exe
         asset_content_type: application/octet-stream
     - name: Upload Release Asset (macOS)
       uses: actions/upload-release-asset@v1
@@ -213,6 +288,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist/macos-latest/coverage-ai
-        asset_name: coverage-ai-macos
+        asset_path: dist/macos-latest/cover-agent
+        asset_name: cover-agent-macos
         asset_content_type: application/octet-stream

@@ -7,6 +7,7 @@ set -x
 MODEL=""
 API_BASE=""
 OPENAI_API_KEY="${OPENAI_API_KEY:-}"
+ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}"
 DOCKERFILE=""
 DOCKER_IMAGE=""
 SOURCE_FILE_PATH=""
@@ -17,6 +18,7 @@ CODE_COVERAGE_REPORT_PATH="coverage.xml"
 MAX_ITERATIONS=3  # Default value
 DESIRED_COVERAGE=70  # Default value
 LOG_DB_PATH="${LOG_DB_PATH:-}"
+SUPPRESS_LOG_FILES=""
 
 # Function to clean up Docker container
 cleanup() {
@@ -46,6 +48,7 @@ while [ "$#" -gt 0 ]; do
     --max-iterations) MAX_ITERATIONS="$2"; shift ;;
     --desired-coverage) DESIRED_COVERAGE="$2"; shift ;;
     --log-db-path) LOG_DB_PATH="$2"; shift ;;
+    --suppress-log-files) SUPPRESS_LOG_FILES="--suppress-log-files" ;;
     *) echo "Unknown parameter passed: $1"; exit 1 ;;
   esac
   shift
@@ -66,16 +69,19 @@ fi
 # Build or pull the Docker image
 if [ -n "$DOCKERFILE" ]; then
   echo "Building the Docker image..."
-  docker build -t coverage-ai-image -f "$DOCKERFILE" "$(dirname "$DOCKERFILE")"
+  docker build --platform linux/amd64 -t cover-agent-image -f "$DOCKERFILE" "$(dirname "$DOCKERFILE")"
 else
   echo "Pulling the Docker image..."
   docker pull "$DOCKER_IMAGE"
-  docker tag "$DOCKER_IMAGE" coverage-ai-image
+  docker tag "$DOCKER_IMAGE" cover-agent-image
 fi
 
-ARGS=""
 if [ -n "$OPENAI_API_KEY" ]; then
   ARGS="$ARGS -e OPENAI_API_KEY=$OPENAI_API_KEY"
+fi
+
+if [ -n "$ANTHROPIC_API_KEY" ]; then
+  ARGS="$ARGS -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY"
 fi
 
 if [ -n "$LOG_DB_PATH" ]; then
@@ -85,7 +91,7 @@ fi
 
 # Start the container in detached mode with the environment variable if set
 echo "Starting the container..."
-CONTAINER_ID=$(sh -c "docker run -d $ARGS coverage-ai-image tail -f /dev/null")
+CONTAINER_ID=$(sh -c "docker run -d $ARGS cover-agent-image tail -f /dev/null")
 
 # Ensure the container started successfully
 if [ -z "$CONTAINER_ID" ]; then
@@ -93,13 +99,13 @@ if [ -z "$CONTAINER_ID" ]; then
   exit 1
 fi
 
-# Copy the coverage-ai binary into the running container
-echo "Copying coverage-ai binary into the container..."
-docker cp dist/coverage-ai "$CONTAINER_ID":/usr/local/bin/coverage-ai
+# Copy the cover-agent binary into the running container
+echo "Copying cover-agent binary into the container..."
+docker cp dist/cover-agent "$CONTAINER_ID":/usr/local/bin/cover-agent
 
-# Run the coverage-ai command inside the running container
-echo "Running the coverage-ai command..."
-COMMAND="/usr/local/bin/coverage-ai \
+# Run the cover-agent command inside the running container
+echo "Running the cover-agent command..."
+COMMAND="/usr/local/bin/cover-agent \
   --source-file-path \"$SOURCE_FILE_PATH\" \
   --test-file-path \"$TEST_FILE_PATH\" \
   --code-coverage-report-path \"$CODE_COVERAGE_REPORT_PATH\" \
@@ -121,8 +127,16 @@ if [ -n "$LOG_DB_PATH" ]; then
   COMMAND="$COMMAND --log-db-path \"/$LOG_DB_NAME\""
 fi
 
-if [ -n "$OPENAI_API_KEY" ]; then
+if [ -n "$SUPPRESS_LOG_FILES" ]; then
+  COMMAND="$COMMAND $SUPPRESS_LOG_FILES"
+fi
+
+if [ -n "$OPENAI_API_KEY" ] && [ -n "$ANTHROPIC_API_KEY" ]; then
+  docker exec -e OPENAI_API_KEY="$OPENAI_API_KEY" -e ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" "$CONTAINER_ID" bash -c "$COMMAND"
+elif [ -n "$OPENAI_API_KEY" ]; then
   docker exec -e OPENAI_API_KEY="$OPENAI_API_KEY" "$CONTAINER_ID" bash -c "$COMMAND"
+elif [ -n "$ANTHROPIC_API_KEY" ]; then
+  docker exec -e ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" "$CONTAINER_ID" bash -c "$COMMAND"
 else
   docker exec "$CONTAINER_ID" bash -c "$COMMAND"
 fi
