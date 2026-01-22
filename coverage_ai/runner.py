@@ -4,7 +4,11 @@ import time
 
 class Runner:
     @staticmethod
-    def run_command(command: str, max_run_time_sec: int, cwd: str = None):
+ import subprocess
+ import time
+from typing import Optional
+
+    def run_command(command: str, max_run_time_sec: int, cwd: Optional[str] = None):
         """
         Executes a shell command in a specified working directory and returns its output, error, and exit code.
 
