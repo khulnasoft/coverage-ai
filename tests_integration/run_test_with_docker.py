@@ -305,8 +305,8 @@ def compose_test_command(test_args: argparse.Namespace) -> list:
 
     if test_args.log_db_path:
         log_db_name = os.path.basename(test_args.log_db_path)
-        command.extend(["--log-db-path", f"{log_db_name}"])
-
+        container_log_db_path = f"/{log_db_name}"
+        command.extend(["--log-db-path", container_log_db_path])
     if test_args.record_mode:
         command.extend(["--record-mode"])
 
