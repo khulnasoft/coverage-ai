@@ -265,14 +265,13 @@ generate_tests:
       )\n        assert response.status_code == 200\n        assert response.json()\
       \ == {\"is_palindrome\": True}\n  new_imports_code: |\n    \"\"\n  test_tags:\
       \ happy path\n\n- test_behavior: |\n    Test that the days_until_new_year endpoint\
-      \ returns the correct number of days until the next New Year.\n  lines_to_cover:\
-      \ |\n    [114, 115, 116, 117]\n  test_name: |\n    test_days_until_new_year\n\
-      \  test_code: |\n    def test_days_until_new_year():\n        response = client.get(\"\
-      /days-until-new-year\")\n        assert response.status_code == 200\n      \
-      \  assert response.json() == {\"days_until_new_year\": (date(today.year + 1,\
-      \ 1, 1) - date.today()).days}\n  new_imports_code: |\n    from datetime import\
-      \ date\n  test_tags: happy path\n\n- test_behavior: |\n    Test that the echo\
-      \ endpoint returns the same message that is sent to it.\n  lines_to_cover: |\n\
+    def test_days_until_new_year():
+        today = date.today()
+        response = client.get("/days-until-new-year")
+        assert response.status_code == 200
+        assert response.json() == {
+            "days_until_new_year": (date(today.year + 1, 1, 1) - today).days
+        }
       \    [125]\n  test_name: |\n    test_echo\n  test_code: |\n    def test_echo():\n\
       \        response = client.get(\"/echo/Hello%20World\")\n        assert response.status_code\
       \ == 200\n        assert response.json() == {\"message\": \"Hello World\"}\n\
